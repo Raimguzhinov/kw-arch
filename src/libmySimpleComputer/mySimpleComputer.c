@@ -46,7 +46,7 @@ sc_memorySave (char *filename)
     {
       return 1;
     }
-  fwrite (memory, sizeof (int), RAM_SIZE, fp);
+  fwrite (memory, RAM_SIZE, sizeof(RAM_SIZE), fp);
   fclose (fp);
   return 0;
 }
@@ -60,7 +60,7 @@ sc_memoryLoad (char *filename)
     {
       return 1;
     }
-  fread (memory, sizeof (int), RAM_SIZE, fp);
+  fread (memory, RAM_SIZE, sizeof(RAM_SIZE), fp);
   fclose (fp);
   return 0;
 }
