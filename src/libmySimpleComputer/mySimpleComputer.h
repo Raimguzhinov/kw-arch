@@ -52,15 +52,26 @@
 #define pSUBC 76
 
 // Макрос для проверки существующей команды процессору
-#define CHECK_CPU_CMD(x) ((x == READ) || (x == WRITE) || (x == LOAD) || (x == STORE) || (x == ADD) || (x == SUB) || (x == DIVIDE) || (x == MUL) || (x == JUMP) || (x == JNEG) || (x == JZ) || (x == HALT) || (x == NOT) || (x == AND) || (x == OR) || (x == XOR) || (x == JNS) || (x == JC) || (x == JNC) || (x == JP) || (x == JNP) || (x == CHL) || (x == SHR) || (x == RCL) || (x == RCR) || (x == NEG) || (x == ADDC) || (x == SUBC) || (x == LOGLC) || (x == LOGRC) || (x == RCCL) || (x == RCCR) || (x == MOVA) || (x == MOVR) || (x == MOVCA) || (x == MOVCR) || (x == pADDC) || (x == pSUBC)) ? 1 : 0
+#define CHECK_CPU_CMD(x)                                                      \
+  ((x == READ) || (x == WRITE) || (x == LOAD) || (x == STORE) || (x == ADD)   \
+   || (x == SUB) || (x == DIVIDE) || (x == MUL) || (x == JUMP) || (x == JNEG) \
+   || (x == JZ) || (x == HALT) || (x == NOT) || (x == AND) || (x == OR)       \
+   || (x == XOR) || (x == JNS) || (x == JC) || (x == JNC) || (x == JP)        \
+   || (x == JNP) || (x == CHL) || (x == SHR) || (x == RCL) || (x == RCR)      \
+   || (x == NEG) || (x == ADDC) || (x == SUBC) || (x == LOGLC)                \
+   || (x == LOGRC) || (x == RCCL) || (x == RCCR) || (x == MOVA)               \
+   || (x == MOVR) || (x == MOVCA) || (x == MOVCR) || (x == pADDC)             \
+   || (x == pSUBC))                                                           \
+      ? 1                                                                     \
+      : 0
 
 int sc_memoryInit ();
 int sc_memorySet (int address, int value);
 int sc_memoryGet (int address, int *value);
 int sc_memorySave (char *filename);
-int sc_memoryLoad(char *filename);
+int sc_memoryLoad (char *filename);
 int sc_regInit (void);
 int sc_regSet (int registr, int value);
 int sc_regGet (int registr, int *value);
-int sc_commandEncode(int command, int operand, int *value);
-int sc_commandDecode(int value,int *command,int *operand);
+int sc_commandEncode (int command, int operand, int *value);
+int sc_commandDecode (int value, int *command, int *operand);

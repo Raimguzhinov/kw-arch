@@ -1,7 +1,7 @@
 #include "mySimpleComputer.h"
 
 int memory[RAM_SIZE]; // Модель оперативной памяти
-int sc_regFlags;     // Регистр флагов
+int sc_regFlags;      // Регистр флагов
 
 int
 sc_memoryInit ()
@@ -46,7 +46,7 @@ sc_memorySave (char *filename)
     {
       return 1;
     }
-  fwrite (memory, RAM_SIZE, sizeof(RAM_SIZE), fp);
+  fwrite (memory, RAM_SIZE, sizeof (RAM_SIZE), fp);
   fclose (fp);
   return 0;
 }
@@ -60,7 +60,7 @@ sc_memoryLoad (char *filename)
     {
       return 1;
     }
-  fread (memory, RAM_SIZE, sizeof(RAM_SIZE), fp);
+  fread (memory, RAM_SIZE, sizeof (RAM_SIZE), fp);
   fclose (fp);
   return 0;
 }
