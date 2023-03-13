@@ -23,7 +23,7 @@ enum colors
   CYAN = 36
 };
 
-int instruction_counter;
+extern int instruction_counter;
 int mt_clrscr (void);
 int mt_gotoXY (int x, int y);
 int mt_getscreensize (int *rows, int *cols);
