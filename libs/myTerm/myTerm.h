@@ -1,7 +1,11 @@
+// Copyright [2023] <Raimguzhinov>
+#pragma once
 #include <stdio.h>
 #include <sys/ioctl.h>
 #include <termios.h>
 #include <unistd.h>
+
+extern int instruction_counter;
 
 #define UL_CORNER 'l' // левый верхний угол
 #define UR_CORNER 'k' // правый верхний угол
@@ -23,7 +27,6 @@ enum colors
   CYAN = 36
 };
 
-extern int instruction_counter;
 int mt_clrscr (void);
 int mt_gotoXY (int x, int y);
 int mt_getscreensize (int *rows, int *cols);

@@ -1,6 +1,8 @@
 #include "myTerm.h"
 #include <stdio.h>
 
+int instruction_counter;
+
 int
 mt_clrscr ()
 {
