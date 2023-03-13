@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -Wall -I ./src/libmySimpleComputer
+CFLAGS = -Wall -I /src/libmySimpleComputer /src/libmyTerm/
 
 APP_NAME = mySimpleComputer
 LIB_COMPUTER_NAME = mySimpleComputer
@@ -14,7 +14,7 @@ SRC_DIR = src
 APP_PATH = $(BIN_DIR)/$(APP_NAME)
 LIB_COMPUTER_PATH = $(LIB_DIR)/lib$(LIB_COMPUTER_NAME).a
 
-LDLIBS = -L$(LIB_DIR) -lmySimpleComputer
+LDLIBS = -L$(LIB_DIR) -lmySimpleComputer -lmyTerm
 
 SRC_EXT = c
 
