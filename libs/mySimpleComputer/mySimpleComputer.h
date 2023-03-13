@@ -30,7 +30,9 @@
 #define CHECK_CPU_CMD(x)                                                      \
   ((x == READ) || (x == WRITE) || (x == LOAD) || (x == STORE) || (x == ADD)   \
    || (x == SUB) || (x == DIVIDE) || (x == MUL) || (x == JUMP) || (x == JNEG) \
-   || (x == JZ) || (x == HALT) || (x == NOT)) ? 1 : 0
+   || (x == JZ) || (x == HALT) || (x == NOT))                                 \
+      ? 1                                                                     \
+      : 0
 
 int sc_memoryInit ();
 int sc_memorySet (int address, int value);

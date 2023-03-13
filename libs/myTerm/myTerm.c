@@ -58,13 +58,15 @@ mt_setbgcolor (enum colors color)
   return 0;
 }
 
-int mt_setdfcolor()
+int
+mt_setdfcolor ()
 {
-  printf("\033[0m");
+  printf ("\033[0m");
   return 0;
 }
 
-int mt_printsymbol(char symbol)
+int
+mt_printsymbol (char symbol)
 {
   printf ("\033(0%c\033(B", symbol);
   return 0;
