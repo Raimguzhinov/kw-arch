@@ -80,14 +80,10 @@
                 {                                                             \
                   mt_setbgcolor (GREEN);                                      \
                 }                                                             \
-              if ((value >> 14) & 1)                                          \
-                {                                                             \
-                  printf (" %04X", value &(~(1 << 14)));                      \
-                }                                                             \
-              else                                                            \
-                {                                                             \
-                  printf ("+%04X", value);                                    \
-                }                                                             \
+              int command, operand;                                           \
+              sc_commandDecode (value, &command, &operand);                   \
+              printf ("%c%02X%02X", (value >> 14) ? '-' : '+',                \
+                      abs ((value >> 7) & 0x7F), abs (value & 0x7F));         \
               mt_setdfcolor ();                                               \
             }                                                                 \
         }                                                                     \
@@ -206,6 +202,13 @@ drawing_flags ()
 int
 ui_initialise (int counter)
 {
+  int count_rows, count_columns;
+  mt_getscreensize (&count_rows, &count_columns);
+  if (count_rows < 30 || count_columns < 30)
+    {
+      printf ("\nмаленький размер окна!!!");
+      return -1;
+    }
   instruction_counter = counter;
   mt_clrscr ();
   drawing_boxes ();
@@ -222,7 +225,7 @@ main ()
 {
   int counter = 0x35;
   sc_memoryInit ();
-  sc_memorySet (counter, 0x9999);
+  sc_memorySet (counter, 0x2be4);
   ui_initialise (counter);
 
   return 0;
