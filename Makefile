@@ -1,51 +1,28 @@
-CC = gcc
-CFLAGS = -Wall -I ./src/libmySimpleComputer
-
-APP_NAME = mySimpleComputer
-LIB_COMPUTER_NAME = mySimpleComputer
-
-OBJ_DIR = obj
-OBJ_SRC_DIR = $(OBJ_DIR)/src
-
-LIB_DIR = lib
 BIN_DIR = bin
-SRC_DIR = src
+LIBS_DIRS = ${patsubst libs/%,%,${wildcard libs/*} }
+MYLIBS = mySimpleComputer myTerm
 
-APP_PATH = $(BIN_DIR)/$(APP_NAME)
-LIB_COMPUTER_PATH = $(LIB_DIR)/lib$(LIB_COMPUTER_NAME).a
+CFLAGS = -Wall ${addprefix -I libs/,${LIBS_DIRS}}
+LDLIBS = ${addprefix -L libs/,${LIBS_DIRS}} ${addprefix -l,${LIBS_DIRS}}
 
-LDLIBS = -L$(LIB_DIR) -lmySimpleComputer
+.PHONY: all build_dirs run
 
-SRC_EXT = c
+all: build_dirs binary
 
-APP_SOURCES = $(shell find $(SRC_DIR)/$(APP_NAME) -name '*.$(SRC_EXT)')
-APP_OBJECTS = $(APP_SOURCES:$(SRC_DIR)/%.$(SRC_EXT)=$(OBJ_DIR)/$(SRC_DIR)/%.o)
+binary: ${MYLIBS}
+	${CC} $(CFLAGS) -o ${BIN_DIR}/binary project/main.c $(LDLIBS)
+	${CC} $(CFLAGS) -o ${BIN_DIR}/binary2 project/interface.c $(LDLIBS)
 
-LIB_COMPUTER_SOURCES = $(shell find $(SRC_DIR)/lib$(LIB_COMPUTER_NAME) -name '*.$(SRC_EXT)')
-LIB_COMPUTER_OBJECTS = $(LIB_COMPUTER_SOURCES:$(SRC_DIR)/%.$(SRC_EXT)=$(OBJ_DIR)/$(SRC_DIR)/%.o)
+${MYLIBS}:
+	${MAKE} -C libs/${notdir $@}
 
+build_dirs:
+	mkdir -p ${BIN_DIR}
 
-DEPS=$(APP_OBJECTS:.o=.d)$(LIB_COMPUTER_SOURCES:.o=.d)
+run:
+	./${BIN_DIR}/binary2;
 
-.PHONY: all
-all: $(APP_PATH)
-
--include $(DEPS)
-
-$(APP_PATH): $(APP_OBJECTS) $(LIB_COMPUTER_PATH)
-	$(CC) $(CFLAGS) $(APP_OBJECTS) -o $@ $(LDLIBS)
-
-$(LIB_COMPUTER_PATH): $(LIB_COMPUTER_OBJECTS)
-	ar rcs $@ $^
-
-$(OBJ_DIR)/%.o: %.c
-	$(CC) -c $(CFLAGS) $< -o $@
-
-run: $(APP_PATH)
-	$(APP_PATH)
-
-.PHONY: clean
 clean:
-	$(RM) $(APP_PATH) $(LIB_COMPUTER_PATH)
-	find $(OBJ_DIR) -name '*.o' -exec $(RM) '{}' \;
-	find $(OBJ_DIR) -name '*.d' -exec $(RM) '{}' \;
+	${RM} ${BIN_DIR}/*
+	${RM} ${addsuffix /*.o,${addprefix libs/,${LIBS_DIRS}}}
+	${RM} ${addsuffix /*.a,${addprefix libs/,${LIBS_DIRS}}}

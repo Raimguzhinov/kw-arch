@@ -1,4 +1,5 @@
 #include <mySimpleComputer.h>
+#include <myTerm.h>
 
 int
 main ()
@@ -13,7 +14,6 @@ main ()
       sc_memoryGet (i, &value);
       printf ("RAM[%d] = %d\n", i, value);
     }
-
   sc_memorySet (0, 99);
   sc_memorySave ("test.bin");
   printf ("\n>> сохранение файла\n");
@@ -26,7 +26,6 @@ main ()
       sc_memoryGet (i, &value);
       printf ("RAM[%d] = %d\n", i, value);
     }
-
   sc_regInit ();
   sc_regSet (FLAG_T, 1);
   printf ("\n>> поднят флаг для игнорирования тактовых импульсов\n");
@@ -40,7 +39,6 @@ main ()
   printf ("игнорирование тактовых импульсов [FLAG_T] = %d\n", value);
   sc_regGet (FLAG_E, &value);
   printf ("указана неверная команда [FLAG_E] = %d\n", value);
-
   printf ("\n>> кодирование\n");
   int encode, oper, com = 0;
   sc_commandEncode (0x33, 0x59, &encode);
