@@ -1,6 +1,6 @@
 BIN_DIR = bin
 LIBS_DIRS = ${patsubst libs/%,%,${wildcard libs/*} }
-MYLIBS = mySimpleComputer myTerm
+MYLIBS = mySimpleComputer myTerm myBigChars
 
 CFLAGS = -Wall ${addprefix -I libs/,${LIBS_DIRS}}
 LDLIBS = ${addprefix -L libs/,${LIBS_DIRS}} ${addprefix -l,${LIBS_DIRS}}
