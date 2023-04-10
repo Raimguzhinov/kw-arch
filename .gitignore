@@ -1,5 +1,8 @@
 ### C ###
 
+.DS_Store
+libs/.DS_Store
+
 bin/
 # Prerequisites
 *.d
