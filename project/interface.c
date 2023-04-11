@@ -1,8 +1,10 @@
+#include <myBigChars.h>
 #include <mySimpleComputer.h>
 #include <myTerm.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+short ind;
 
 #define ROWS 24
 #define COLUMNS 80
@@ -54,7 +56,7 @@
   do                                                                          \
     {                                                                         \
       mt_gotoXY (x, y);                                                       \
-      printf ("%s", str);                                                     \
+      write (STDOUT_FILENO, str, strlen (str));                               \
     }                                                                         \
   while (0)
 
@@ -62,7 +64,7 @@
   do                                                                          \
     {                                                                         \
       mt_gotoXY (x, y);                                                       \
-      printf ("%s", k);                                                       \
+      write (STDOUT_FILENO, k, strlen (k));                                   \
     }                                                                         \
   while (0)
 
@@ -82,8 +84,11 @@
                 }                                                             \
               int command, operand;                                           \
               sc_commandDecode (value, &command, &operand);                   \
-              printf ("%c%02X%02X", (value >> 14) ? '-' : '+',                \
-                      abs ((value >> 7) & 0x7F), abs (value & 0x7F));         \
+              char buffer[7];                                                 \
+              int length                                                      \
+                  = sprintf (buffer, "%c%02X%02X", (value >> 14) ? '-' : '+', \
+                             abs ((value >> 7) & 0x7F), abs (value & 0x7F));  \
+              write (STDOUT_FILENO, buffer, length);                          \
               mt_setdfcolor ();                                               \
             }                                                                 \
         }                                                                     \
@@ -99,14 +104,19 @@
           int value;                                                          \
           sc_regGet (i, &value);                                              \
           mt_gotoXY (68 + (i * 2), 11);                                       \
-          printf ("%c", flags[i]);                                            \
+          char buffer[2];                                                     \
+          int length = sprintf (buffer, "%c", flags[i]);                      \
+          write (STDOUT_FILENO, buffer, length);                              \
         }                                                                     \
       mt_gotoXY (68, 8);                                                      \
-      printf ("+00 : 00");                                                    \
+      char buffer1[8] = "+00 : 00";                                           \
+      write (STDOUT_FILENO, buffer1, sizeof (buffer1));                       \
       mt_gotoXY (70, 5);                                                      \
-      printf ("+0000");                                                       \
+      char buffer2[5] = "+0000";                                              \
+      write (STDOUT_FILENO, buffer2, sizeof (buffer2));                       \
       mt_gotoXY (70, 2);                                                      \
-      printf ("+0001");                                                       \
+      char buffer3[5] = "+0001";                                              \
+      write (STDOUT_FILENO, buffer3, sizeof (buffer3));                       \
     }                                                                         \
   while (0)
 
@@ -118,32 +128,32 @@ print_box (int x, int y, int width, int height)
   if (count_rows < 20 || count_columns < 20)
     return -1;
   mt_gotoXY (x, y);
-  mt_printsymbol (UL_CORNER);
+  mt_printsymbol (ACS_ULCORNER);
   mt_gotoXY (x + width - 1, y);
-  mt_printsymbol (UR_CORNER);
+  mt_printsymbol (ACS_URCORNER);
   mt_gotoXY (x + width - 1, y + height - 1);
-  mt_printsymbol (DR_CORNER);
+  mt_printsymbol (ACS_LRCORNER);
   mt_gotoXY (x, y + height - 1);
-  mt_printsymbol (DL_CORNER);
+  mt_printsymbol (ACS_LLCORNER);
   /* линии вверх-низ */
   for (int i = 1; i < width - 1; ++i)
     {
       /* верхние линии */
       mt_gotoXY (x + i, y);
-      mt_printsymbol (H_LINE);
+      mt_printsymbol (ACS_HLINE);
       /* нижние линии*/
       mt_gotoXY (x + i, y + height - 1);
-      mt_printsymbol (H_LINE);
+      mt_printsymbol (ACS_HLINE);
     }
   /* боковые линии */
   for (int i = 1; i < height - 1; ++i)
     {
       /* лево */
       mt_gotoXY (x, y + i);
-      mt_printsymbol (V_LINE);
+      mt_printsymbol (ACS_VLINE);
       /* право */
       mt_gotoXY (x + width - 1, y + i);
-      mt_printsymbol (V_LINE);
+      mt_printsymbol (ACS_VLINE);
     }
   return 0;
 }
@@ -177,11 +187,63 @@ drawing_texts ()
                         (char *)" i  – reset",
                         (char *)" F5 – accumulator",
                         (char *)" F6 – instructionCounter" };
+
   for (int i = 0; i < 7; i++)
     {
       HOTKEY (54, i + 14, hot_keys[i]);
     }
   TEXT (1, 24, "Input/Output: ");
+  return 0;
+}
+
+int
+drawing_bigchars ()
+{
+  int value, command, operand;
+  sc_memoryGet (instruction_counter, &value);
+  if (sc_memoryGet (instruction_counter, &value) < 0)
+    {
+      return -1;
+    }
+  if (sc_commandDecode (value & 0x3FFF, &command, &operand) < 0)
+    {
+      return -2;
+    }
+
+  if (!(value & 0x4000))
+    {
+      ind = 16;
+      bc_printbigchar (big_chars[ind], 2, 14, GREEN, 0);
+    }
+
+  else
+    {
+      ind = 17;
+      bc_printbigchar (big_chars[ind], 2, 14, GREEN, 0);
+    }
+
+  int ch;
+  for (int i = 0; i < 4; ++i)
+    {
+      switch (i)
+        {
+        case 0:
+          ch = (command >> 4) & 0xF;
+          break;
+        case 1:
+          ch = (command)&0xF;
+          break;
+        case 2:
+          ch = (operand >> 4) & 0xF;
+          break;
+        case 3:
+          ch = (operand)&0xF;
+          break;
+        }
+      bc_printbigchar (big_chars[ch], 2 + 8 * (i + 1) + 2 * (i + 1), 14, GREEN,
+                       0);
+    }
+
   return 0;
 }
 
@@ -213,10 +275,12 @@ ui_initialise (int counter)
   mt_clrscr ();
   drawing_boxes ();
   drawing_texts ();
-  drawing_memory ();
   drawing_flags ();
+  drawing_memory ();
+  drawing_bigchars();
   mt_gotoXY (15, 24);
   getchar_unlocked ();
+  printf("%d",instruction_counter);
   return 0;
 }
 
@@ -225,8 +289,10 @@ main ()
 {
   int counter = 0x35;
   sc_memoryInit ();
-  sc_memorySet (counter, 0x2be4);
+  sc_memorySet (counter+5, 0x4a81);
+  sc_memorySet (counter, 0x4f2b);
+  sc_memorySet (counter-2, 0x2be4);
   ui_initialise (counter);
-
+  
   return 0;
 }
