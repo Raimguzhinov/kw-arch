@@ -132,12 +132,12 @@ sc_commandDecode (int value, int *command, int *operand)
       else
         {
           sc_regSet (FLAG_E, 1);
-          return 1;
+          return -1;
         }
     }
   else
     {
-      return 1;
+      return -1;
     }
   return 0;
 }
