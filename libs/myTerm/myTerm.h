@@ -24,7 +24,7 @@ enum colors
   BLUE = 30,
   YELLOW,
   GREEN = 34,
-  PURPLE,
+  PURPLE = 55,
   CYAN = 36
 };
 

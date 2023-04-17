@@ -86,7 +86,7 @@ bc_printbigchar (int *big, int x, int y, enum colors colorFG,
           bc_printA (ACS_CKBOARD);
         if (!value)
           {
-            snprintf (buf, 6, "%c ", ' ');
+            snprintf (buf, 6, "%c", ' ');
           }
         write (1, buf, strlen (buf));
       }
@@ -119,23 +119,36 @@ bc_getbigcharpos (int *big, int x, int y, int *value)
   return 0;
 }
 
-int bc_bigcharwrite (int fd, int *big, int count)
+int
+bc_bigcharwrite (int fd, int *big, int count)
 {
-  if (write (fd, big, count * 2 * sizeof (int)))
-    return -1;
+  if (big == NULL || count <= 0)
+    {
+      return -1;
+    }
+  ssize_t bytes_written = write (fd, big, count * sizeof (int));
+  if (bytes_written == -1)
+    {
+      return -1;
+    }
   return 0;
 }
 
-int bc_bigcharread (int fd, int *big, int need_count, int *count)
+int
+bc_bigcharread (int fd, int *big, int need_count, int *count)
 {
-  *count = 0;
-  for (int i = 0; i < need_count * 2; ++i)
+  if (big == NULL || need_count <= 0)
     {
-      if (read (fd, &big[i], sizeof (int)) == -1)
-        return -1;
-      if (!((i + 1) % 2))
-        (*count)++;
+      return -1;
     }
-
+  ssize_t bytes_read = read (fd, big, need_count * sizeof (int));
+  if (bytes_read == -1)
+    {
+      return -1;
+    }
+  if (count != NULL)
+    {
+      *count = bytes_read / sizeof (int);
+    }
   return 0;
 }
