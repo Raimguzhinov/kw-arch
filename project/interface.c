@@ -277,10 +277,10 @@ ui_initialise (int counter)
   drawing_texts ();
   drawing_flags ();
   drawing_memory ();
-  drawing_bigchars();
+  drawing_bigchars ();
   mt_gotoXY (15, 24);
   getchar_unlocked ();
-  printf("%d",instruction_counter);
+  printf ("%d", instruction_counter);
   return 0;
 }
 
@@ -289,10 +289,10 @@ main ()
 {
   int counter = 0x35;
   sc_memoryInit ();
-  sc_memorySet (counter+5, 0x4a81);
+  sc_memorySet (counter + 5, 0x4a81);
   sc_memorySet (counter, 0x4f2b);
-  sc_memorySet (counter-2, 0x2be4);
+  sc_memorySet (counter - 2, 0x2be4);
   ui_initialise (counter);
-  
+
   return 0;
 }
