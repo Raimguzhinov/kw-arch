@@ -10,8 +10,9 @@ LDLIBS = ${addprefix -L libs/,${LIBS_DIRS}} ${addprefix -l,${LIBS_DIRS}}
 all: build_dirs binary
 
 binary: ${MYLIBS}
+	${CC} $(CFLAGS) -o ${BIN_DIR}/test project/testbch.c $(LDLIBS)
 	${CC} $(CFLAGS) -o ${BIN_DIR}/binary project/main.c $(LDLIBS)
-	${CC} $(CFLAGS) -o ${BIN_DIR}/binary2 project/interface.c $(LDLIBS)
+	${CC} $(CFLAGS) -o ${BIN_DIR}/console project/interface.c $(LDLIBS)
 
 ${MYLIBS}:
 	${MAKE} -C libs/${notdir $@}
@@ -20,7 +21,7 @@ build_dirs:
 	mkdir -p ${BIN_DIR}
 
 run:
-	./${BIN_DIR}/binary2;
+	./${BIN_DIR}/console;
 
 clean:
 	${RM} ${BIN_DIR}/*
