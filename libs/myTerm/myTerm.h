@@ -7,23 +7,24 @@
 
 extern int instruction_counter;
 
-#define UL_CORNER 'l' // левый верхний угол
-#define UR_CORNER 'k' // правый верхний угол
-#define DR_CORNER 'j' // правый нижний угол
-#define DL_CORNER 'm' // левый нижний угол
-#define H_LINE 'q'    // горизонтальная линия
-#define V_LINE 'x'    // вертикальная линия
-#define FILL 'a'      // штриховка
+#define ACS_CKBOARD 'a'  // штриховка
+#define ACS_ULCORNER 'l' // левый верхний угол
+#define ACS_URCORNER 'k' // правый верхний угол
+#define ACS_LRCORNER 'j' // правый нижний угол
+#define ACS_LLCORNER 'm' // левый нижний угол
+#define ACS_HLINE 'q'    // горизонтальная линия
+#define ACS_VLINE 'x'    // вертикальная линия
 
 enum colors
 {
+  DEFAULT,
   WHITE = 15,
   BLACK,
   RED = 196,
   BLUE = 30,
   YELLOW,
   GREEN = 34,
-  PURPLE,
+  PURPLE = 55,
   CYAN = 36
 };
 
