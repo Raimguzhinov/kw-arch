@@ -9,8 +9,8 @@ tput cup 0 6
 
 echo -e "${enter_alt_charset_mode} lqqqqqqqqqk${exit_alt_charset_mode}"
 
-for i in {1..7}; do
-tput cup $((0+i)) 7 # Set cursor position for this row
+for i in {1..4}; do
+tput cup $((1+i)) 7 # Set cursor position for this row
 
 echo -e "${enter_alt_charset_mode}x${acs_chars:0:2}x${exit_alt_charset_mode}   ${enter_alt_charset_mode}x${acs_chars:0:2}x${exit_alt_charset_mode}"
 done
