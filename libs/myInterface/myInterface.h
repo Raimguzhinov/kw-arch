@@ -5,8 +5,6 @@
 #include <myTerm.h>
 #include <time.h>
 
-extern int font[36];
-
 #define ROWS 24
 #define COLUMNS 80
 

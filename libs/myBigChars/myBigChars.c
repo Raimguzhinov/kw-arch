@@ -1,5 +1,6 @@
 #include "myBigChars.h"
 
+int font[36];
 int big_chars[][2] = {
   { 0xE7E7FFFF, 0xFFFFE7E7 }, // 0
   { 0x1CDC7C3C, 0xFFFF1C1C }, // 1

@@ -7,7 +7,7 @@
 #include <string.h>
 
 extern int big_chars[][2];
-int font[36];
+extern int font[36];
 
 int bc_printA (char str);
 int bc_box (int x1, int y1, int x2, int y2);
