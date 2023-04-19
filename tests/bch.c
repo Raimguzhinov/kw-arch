@@ -11,48 +11,29 @@ void
 testFONT (int num, int x, int y)
 {
   // mt_clrscr ();
-  bc_printbigchar (big_chars[num], x, y, PURPLE, DEFAULT);
+  bc_printbigchar (big_chars[num], x, y, RED, DEFAULT);
   mt_gotoXY (x + 1, y + 12);
 }
 
 int
 main ()
 {
+  int count, fd;
+  int big[2];
   mt_clrscr ();
   testFONT (2, 4, 2);
   bc_printbigchar (big_chars[16], 14, 2, WHITE, DEFAULT);
   testFONT (2, 23, 2);
   bc_printbigchar (big_chars[17], 33, 0, WHITE, DEFAULT);
   bc_printbigchar (big_chars[17], 33, 4, WHITE, DEFAULT);
-  testFONT (4, 42, 2);
+  testFONT (4, 43, 2);
   printf ("\tшрифт ↓\n");
-  int fd = open ("font.txt", O_WRONLY | O_CREAT, 0600);
+  fd = open ("mybch.font", O_RDONLY);
   if (fd < 0)
     {
       perror ("open");
       abort ();
     }
-  for (int i = 0; i < 18; i++)
-    {
-      if (bc_bigcharwrite (fd, big_chars[i], 2) < 0)
-        {
-          perror ("bc_bigcharwrite");
-          abort ();
-        }
-    }
-  if (close (fd) < 0)
-    {
-      perror ("close");
-      abort ();
-    }
-  fd = open ("font.txt", O_RDONLY);
-  if (fd < 0)
-    {
-      perror ("open");
-      abort ();
-    }
-  int count;
-  int big[2];
   for (int i = 0; i < 18; i++)
     {
       if (bc_bigcharread (fd, big, 2, &count) < 0)
@@ -62,10 +43,11 @@ main ()
         }
       if (count != 2 || big[0] != big_chars[i][0] || big[1] != big_chars[i][1])
         {
-          fprintf (stderr, "Error: read unexpected big char %d\n", i);
+          fprintf (stderr, "ошибка: чтение неожиданного большого символа %d\n",
+                   i);
           abort ();
         }
-      bc_printbigchar (big, 2 + i * 10, 15, WHITE, DEFAULT);
+      bc_printbigchar (big, 2 + i * 10, 15, BLUE, DEFAULT);
     }
   if (close (fd) < 0)
     {
@@ -73,5 +55,6 @@ main ()
       abort ();
     }
   printf ("\nвсе тесты прошли успешно!\n");
+
   return 0;
 }

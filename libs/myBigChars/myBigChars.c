@@ -21,11 +21,10 @@ int big_chars[][2] = {
   { 0x7E000000, 0x00000000 }, // -
 };
 
-char buf[512];
-
 int
 bc_printA (char charr)
 {
+  char buf[8];
   sprintf (buf, "\033(0%c\033(B", charr);
   write (1, buf, strlen (buf));
   return 0;
@@ -70,6 +69,7 @@ int
 bc_printbigchar (int *big, int x, int y, enum colors colorFG,
                  enum colors colorBG)
 {
+  char buf[6];
   if (colorFG != DEFAULT)
     mt_setfgcolor (colorFG);
   if (colorBG != DEFAULT)
@@ -151,4 +151,26 @@ bc_bigcharread (int fd, int *big, int need_count, int *count)
       *count = bytes_read / sizeof (int);
     }
   return 0;
+}
+
+void
+bc_initfont (char *filename)
+{
+  int fd = open (filename, O_RDONLY);
+  if (fd < 0)
+    {
+      perror ("open");
+      abort ();
+    }
+  int count;
+  if (bc_bigcharread (fd, font, 36, &count) < 0)
+    {
+      perror ("bc_bigcharread");
+      abort ();
+    }
+  if (close (fd) < 0)
+    {
+      perror ("close");
+      abort ();
+    }
 }
