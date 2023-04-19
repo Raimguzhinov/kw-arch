@@ -3,9 +3,9 @@
 #include <myBigChars.h>
 #include <mySimpleComputer.h>
 #include <myTerm.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <time.h>
+
+extern int font[36];
 
 #define ROWS 24
 #define COLUMNS 80

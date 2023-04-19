@@ -3,10 +3,8 @@
 #include <fcntl.h>
 #include <myTerm.h>
 #include <stdbool.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 
 extern int big_chars[][2];
 int font[36];
