@@ -124,20 +124,17 @@ sc_commandDecode (int value, int *command, int *operand)
       int temp_command, temp_operand;
       temp_command = (value >> 7) & 0x7F;
       temp_operand = value & 0x7F;
-      if (CHECK_CPU_CMD (temp_command))
-        {
-          *command = temp_command;
-          *operand = temp_operand;
-        }
-      else
+      *command = temp_command;
+      *operand = temp_operand;
+      if (!CHECK_CPU_CMD (temp_command))
         {
           sc_regSet (FLAG_E, 1);
-          return -1;
+          return 1;
         }
     }
   else
     {
-      return -1;
+      return 1;
     }
   return 0;
 }
