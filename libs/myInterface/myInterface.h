@@ -1,8 +1,10 @@
-// Copyright [2023] <Raimguzhinov>
 #pragma once
+#include <ctype.h>
 #include <myBigChars.h>
 #include <mySimpleComputer.h>
 #include <myTerm.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <time.h>
 
 #define ROWS 24
@@ -44,19 +46,18 @@
 #define KEYS_HEIGHT 10
 
 int mi_displayMemoryValues ();
-
 int mi_displayAccumulator ();
-
 int mi_displayInstructionCounter ();
-
 int mi_displayOperation ();
-
 int mi_displayFlags ();
-
 int mi_displayBoxes ();
-
 int mi_displayTexts ();
-
 int mi_displayBigchars ();
 
+int mi_Counter ();
 int mi_uiInit (int counter);
+int mi_uiUpdate ();
+int mi_uisetValue ();
+bool mi_checkCorrectInput (const char buffer[10]);
+int mi_messageOutput (char *str, enum colors color);
+int mi_clearBuffIn ();

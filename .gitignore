@@ -4,6 +4,7 @@
 libs/.DS_Store
 
 bin/
+*.bin
 # Prerequisites
 *.d
 

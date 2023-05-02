@@ -1,4 +1,4 @@
-LIB_NAME = myTerm
+LIB_NAME = myReadKey
 CFLAGS = -Wall
 
 .PHONY: all

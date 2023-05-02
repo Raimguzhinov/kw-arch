@@ -39,8 +39,10 @@ mi_displayAccumulator ()
 int
 mi_displayInstructionCounter ()
 {
-  char buffer[5] = "+0000";
+  char buffer[6];
   mt_gotoXY (70, 5);
+  sprintf (buffer, "+%04d", instruction_counter);
+  // write (STDOUT_FILENO, buff, 5);
   write (STDOUT_FILENO, buffer, sizeof (buffer));
   return (0);
 }
@@ -48,9 +50,15 @@ mi_displayInstructionCounter ()
 int
 mi_displayOperation ()
 {
-  char buffer[8] = "+00 : 00";
+  int value;
+  sc_memoryGet (instruction_counter, &value);
   mt_gotoXY (68, 8);
-  write (STDOUT_FILENO, buffer, sizeof (buffer));
+  char buf[32];
+  int command, operand;
+  sc_commandDecode (value, &command, &operand);
+  char sign = (!((value >> 14) & 1)) ? '+' : '-';
+  sprintf (buf, " %c%02X : %02X", sign, command, operand);
+  write (STDOUT_FILENO, buf, strlen (buf));
   return (0);
 }
 
@@ -63,7 +71,7 @@ mi_displayFlags ()
       int value;
       sc_regGet (i + 1, &value);
       if (value == 1)
-        mt_setfgcolor (DEFAULT);
+        mt_setfgcolor (NONACTIVE);
       mt_gotoXY (68 + (i * 2), 11);
       char buffer[2];
       int length = sprintf (buffer, "%c", flags[i]);
@@ -91,23 +99,17 @@ mi_displayTexts ()
 {
   mt_gotoXY (27, 1);
   write (STDOUT_FILENO, " Memory ", strlen (" Memory "));
-  // TEXT (27, 1, " Memory ");
   mt_gotoXY (66, 1);
   write (STDOUT_FILENO, " accumulator ", strlen (" accumulator "));
-  // TEXT (66, 1, " accumulator ");
   mt_gotoXY (63, 4);
   write (STDOUT_FILENO, " instructionCounter ",
          strlen (" instructionCounter "));
-  // TEXT (63, 4, " instructionCounter ");
   mt_gotoXY (67, 7);
   write (STDOUT_FILENO, " Operation ", strlen (" Operation "));
-  // TEXT (67, 7, " Operation ");
   mt_gotoXY (68, 10);
   write (STDOUT_FILENO, " Flags ", strlen (" Flags "));
-  // TEXT (68, 10, " Flags ");
   mt_gotoXY (54, 13);
   write (STDOUT_FILENO, " Keys: ", strlen (" Keys: "));
-  // TEXT (54, 13, " Keys: ");
   char *hot_keys[7] = { (char *)" l  – load",
                         (char *)" s  – save",
                         (char *)" r  – run",
@@ -120,11 +122,8 @@ mi_displayTexts ()
     {
       mt_gotoXY (54, i + 14);
       write (STDOUT_FILENO, hot_keys[i], strlen (hot_keys[i]));
-      // HOTKEY (54, i + 14, hot_keys[i]);
     }
   mt_gotoXY (1, 24);
-  write (STDOUT_FILENO, "Input/Output: ", strlen ("Input/Output: "));
-  // TEXT (1, 24, "Input/Output: ");
   return 0;
 }
 
@@ -181,6 +180,26 @@ mi_displayBigchars ()
 }
 
 int
+mi_Counter ()
+{
+  char buffer[32];
+  write (1, "\033[2K", 4);
+  mt_gotoXY (1, 24);
+  write (STDOUT_FILENO, "Enter i_c: ", strlen ("Enter i_c: "));
+  fgets (buffer, 32, stdin);
+  instruction_counter = atoi (buffer);
+  if (instruction_counter < 0 || instruction_counter > 99)
+    {
+      instruction_counter = 0;
+      mt_clrscr ();
+      write (STDOUT_FILENO, "\033[38;5;196mError\n", 17);
+      return 1;
+    }
+  mi_displayInstructionCounter ();
+  return 0;
+}
+
+int
 mi_uiInit (int counter)
 {
   instruction_counter = counter;
@@ -194,13 +213,131 @@ mi_uiInit (int counter)
   mt_clrscr ();
   mi_displayBoxes ();
   mi_displayTexts ();
+  return 0;
+}
+
+int
+mi_uiUpdate ()
+{
+  mi_displayTexts ();
   mi_displayAccumulator ();
   mi_displayInstructionCounter ();
   mi_displayOperation ();
   mi_displayFlags ();
   mi_displayMemoryValues ();
   mi_displayBigchars ();
-  mt_gotoXY (15, 24);
-  getchar_unlocked ();
+  mt_gotoXY (1, 24);
+  write (STDOUT_FILENO, "Input/Output: ", strlen ("Input/Output: "));
+
+  return 0;
+}
+
+int
+mi_uisetValue ()
+{
+
+  char buffer[10];
+  fgets (buffer, 10, stdin);
+  mt_gotoXY (8, 24);
+  write (1, "\033[2K", 4);
+
+  if (buffer[strlen (buffer) - 1] != '\n')
+    mi_clearBuffIn ();
+
+  if (!mi_checkCorrectInput (buffer))
+    {
+      mt_gotoXY (1, 24);
+      mi_messageOutput ((char *)"Invalid input", ERROR);
+      return -1;
+    }
+
+  long int number = 0;
+  char *tmp;
+
+  if (buffer[0] == '+')
+    {
+      number = strtol (&buffer[1], &tmp, 16);
+      if (number > 0x3FFF)
+        {
+          mi_messageOutput (
+              (char *)"The command value must not exceed 14 bits (0x3FFF)",
+              RED);
+          return -1;
+        }
+      sc_memorySet (instruction_counter, number);
+    }
+  else if (buffer[0] != '-')
+    {
+      number = strtol (buffer, &tmp, 16);
+      if (number > 0x3FFF)
+        {
+          mi_messageOutput (
+              (char *)"The command value must not exceed 14 bits (0x3FFF)",
+              RED);
+          return -1;
+        }
+      sc_memorySet (instruction_counter, number);
+    }
+  else if (buffer[0] == '-')
+    {
+      number = strtol (&buffer[1], &tmp, 16);
+      if (number > 0x3FFF)
+        {
+          mi_messageOutput (
+              (char *)"The command value must not exceed 14 bits (0x3FFF)",
+              RED);
+          return -1;
+        }
+      number = number | 0x4000;
+      sc_memorySet (instruction_counter, number);
+    }
+
+  return 0;
+}
+
+bool
+mi_checkCorrectInput (const char buffer[10])
+{
+  int i;
+  if (buffer[0] == '+' || buffer[0] == '-')
+    {
+      if (strlen (buffer) == 2 || strlen (buffer) > 6)
+        return false;
+      i = 1;
+    }
+  else
+    {
+      i = 0;
+      if (strlen (buffer) == 1 || strlen (buffer) > 5)
+        return false;
+    }
+  for (; i < strlen (buffer) - 1; ++i)
+    if (!(isxdigit (buffer[i])))
+      return false;
+
+  return true;
+}
+
+int
+mi_messageOutput (char *str, enum colors color)
+{
+
+  char buff[100] = { 0 };
+  sprintf (buff, "\033[38;5;%dm%s\033[0m", color, str);
+  write (STDOUT_FILENO, buff, 100);
+  color == ERROR ? sleep (1) : sleep (2);
+  write (1, "\033[2K", 4);
+  return 0;
+}
+
+int
+mi_clearBuffIn ()
+{
+  int c;
+  do
+    {
+      c = getchar ();
+    }
+  while (c != '\n' && c != '\0');
   return 0;
 }
