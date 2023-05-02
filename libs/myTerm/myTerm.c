@@ -23,7 +23,7 @@ mt_gotoXY (int x, int y)
     {
       return -1;
     }
-  char buf[32];
+  char buf[16];
   int len = sprintf (buf, "\033[%d;%dH", y, x);
   write (STDOUT_FILENO, buf, len);
   return 0;

@@ -1,4 +1,3 @@
-// Copyright [2023] <Raimguzhinov>
 #pragma once
 #include <stdio.h>
 #include <sys/ioctl.h>
@@ -21,11 +20,13 @@ enum colors
   WHITE = 15,
   BLACK,
   RED = 196,
+  ERROR,
   BLUE = 30,
   YELLOW,
   GREEN = 34,
-  PURPLE = 55,
-  CYAN = 36
+  PURPLE,
+  CYAN = 36,
+  NONACTIVE = 0
 };
 
 int mt_clrscr (void);

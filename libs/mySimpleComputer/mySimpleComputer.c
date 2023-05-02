@@ -134,6 +134,8 @@ sc_commandDecode (int value, int *command, int *operand)
     }
   else
     {
+      *command = 0;
+      *operand = 0;
       return 1;
     }
   return 0;

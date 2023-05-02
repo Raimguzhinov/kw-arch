@@ -1,4 +1,5 @@
 LIB_NAME = myInterface
+
 CFLAGS = -Wall -I ../myTerm -I ../myBigChars -I ../mySimpleComputer
 
 .PHONY: all

@@ -1,4 +1,3 @@
-// Copyright [2023] <Raimguzhinov>
 #pragma once
 #include <stdio.h>
 
