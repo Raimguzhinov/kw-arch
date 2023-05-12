@@ -19,7 +19,7 @@ sc_memorySet (int address, int value)
   if (address < 0 || address >= RAM_SIZE)
     {
       sc_regSet (FLAG_M, 1);
-      return 1;
+      return FLAG_M;
     }
   memory[address] = value;
   return 0;
@@ -31,7 +31,7 @@ sc_memoryGet (int address, int *value)
   if (address < 0 || address >= RAM_SIZE)
     {
       sc_regSet (FLAG_M, 1);
-      return 1;
+      return FLAG_M;
     }
   *value = memory[address];
   return 0;
@@ -44,7 +44,7 @@ sc_memorySave (char *filename)
   fp = fopen (filename, "wb");
   if (fp == NULL)
     {
-      return 1;
+      return -1;
     }
   fwrite (memory, RAM_SIZE, sizeof (RAM_SIZE), fp);
   fclose (fp);
@@ -58,7 +58,7 @@ sc_memoryLoad (char *filename)
   fp = fopen (filename, "rb");
   if (fp == NULL)
     {
-      return 1;
+      return -1;
     }
   fread (memory, RAM_SIZE, sizeof (RAM_SIZE), fp);
   fclose (fp);
@@ -77,19 +77,19 @@ sc_regSet (int registr, int value)
 {
   if (registr > REG_COUNT || registr <= 0)
     {
-      return 1;
+      return -2;
+    }
+  if (value < 0 || value > 1)
+    {
+      return -3;
     }
   if (value == 1)
     {
       sc_regFlags |= (1 << (registr - 1));
     }
-  else if (value == 0)
-    {
-      sc_regFlags &= ~(1 << (registr - 1));
-    }
   else
     {
-      return 1;
+      sc_regFlags &= ~(1 << (registr - 1));
     }
   return 0;
 }
@@ -99,7 +99,7 @@ sc_regGet (int registr, int *value)
 {
   if (registr > REG_COUNT || registr <= 0)
     {
-      return 1;
+      return -2;
     }
   *value = (sc_regFlags >> (registr - 1)) & 0x1;
   return 0;
@@ -108,35 +108,21 @@ sc_regGet (int registr, int *value)
 int
 sc_commandEncode (int command, int operand, int *value)
 {
-  if (CHECK_CPU_CMD (command))
-    {
-      *value = (command << 7) | operand;
-      return 0;
-    }
-  return 1;
+  if (operand < 0 || operand > 127)
+    return -5;
+  *value = operand + (command << 7);
+  return 0;
 }
 
 int
 sc_commandDecode (int value, int *command, int *operand)
 {
-  if (((value >> 14) & 0x1) == 0)
+  if (value >> 14)
     {
-      int temp_command, temp_operand;
-      temp_command = (value >> 7) & 0x7F;
-      temp_operand = value & 0x7F;
-      *command = temp_command;
-      *operand = temp_operand;
-      if (!CHECK_CPU_CMD (temp_command))
-        {
-          sc_regSet (FLAG_E, 1);
-          return 1;
-        }
+      sc_regSet (FLAG_E, 1);
+      return FLAG_E;
     }
-  else
-    {
-      *command = 0;
-      *operand = 0;
-      return 1;
-    }
+  *command = (value >> 7) & 0x7F;
+  *operand = value & 0x7F;
   return 0;
 }
