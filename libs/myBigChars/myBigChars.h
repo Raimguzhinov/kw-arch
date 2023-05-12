@@ -1,4 +1,3 @@
-// Copyright [2023] <Raimguzhinov>
 #pragma once
 #include <fcntl.h>
 #include <myTerm.h>
