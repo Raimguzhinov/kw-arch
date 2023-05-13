@@ -25,7 +25,8 @@ main ()
   do
     {
       mi_uiUpdate ();
-      mi_showcursor ();
+      mi_hidecursor ();
+
       rk_readKey (&key);
       switch (key)
         {
@@ -59,21 +60,29 @@ main ()
           // raise (SIGALRM);
           break;
         case T_KEY:
+
+          currMemCell = instruction_counter;
           mi_uiUpdate ();
           sc_regSet (FLAG_T, 0);
-          CU ();
+          int cu_result = CU ();
           int value;
           sc_regGet (FLAG_T, &value);
-          if ((instruction_counter >= 0 && instruction_counter <= 99)
-              && !value)
+          if (!(cu_result == 40 || cu_result == 41 || cu_result == 42
+                || cu_result == -2))
             {
-              if (instruction_counter != 99)
+              sc_regSet (FLAG_E, 0);
+              if ((instruction_counter >= 0 && instruction_counter <= 99)
+                  && !value)
                 {
-                  instruction_counter++;
+                  if (instruction_counter != 99)
+                    {
+                      instruction_counter++;
+                    }
+                  else
+                    instruction_counter = 0;
                 }
-              else
-                instruction_counter = 0;
             }
+          sc_regSet (FLAG_T, 1);
           break;
         case I_KEY:
           raise (SIGUSR1);
@@ -98,6 +107,7 @@ main ()
           break;
 
         case ENTER_KEY:
+          mi_showcursor ();
           mi_uisetValue ();
           mi_uiUpdate ();
           break;
@@ -112,5 +122,6 @@ main ()
         }
     }
   while (on);
+  mi_showcursor ();
   return 0;
 }
