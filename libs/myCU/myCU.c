@@ -63,7 +63,8 @@ int
 LOAD (int operand)
 {
   int value = 0;
-  sc_memoryGet (operand, &value);
+  if (sc_memoryGet (operand, &value))
+    return -1;
   accumulator = value;
   return 0;
 }
@@ -71,13 +72,19 @@ LOAD (int operand)
 int
 STORE (int operand)
 {
-  sc_memorySet (operand, accumulator);
+  if (sc_memorySet (operand, accumulator))
+    return -1;
   return 0;
 }
 
 int
 JUMP (int operand)
 {
+  if (operand > 99)
+    {
+      sc_regSet (FLAG_M, 1);
+      return -1;
+    }
   instruction_counter = operand;
   CU ();
   return 0;
@@ -86,22 +93,36 @@ JUMP (int operand)
 int
 JNEG (int operand)
 {
-  if (accumulator < 0)
+  if ((accumulator >> 14) == 0 || (accumulator & 0x3fff) == 0)
     {
-      instruction_counter = operand;
-      CU ();
+      instruction_counter++;
+      return 0;
     }
+  if (operand > 99)
+    {
+      sc_regSet (FLAG_M, 1);
+      return -1;
+    }
+  instruction_counter = operand;
+  CU ();
   return 0;
 }
 
 int
 JZ (int operand)
 {
-  if (accumulator == 0)
+  if (accumulator & 0x3fff)
     {
-      instruction_counter = operand;
-      CU ();
+      instruction_counter++;
+      return 0;
     }
+  if (operand > 99)
+    {
+      sc_regSet (FLAG_M, 1);
+      return -1;
+    }
+  instruction_counter = operand;
+  CU ();
   return 0;
 }
 
@@ -142,7 +163,6 @@ CU ()
       sc_regSet (FLAG_E, 1);
       return -1;
     }
-
   if (((command >= 0x30) && (command <= 0x33)) || (command == 0x52))
     {
       ALU (command, operand);
@@ -153,33 +173,45 @@ CU ()
         {
         case 0x10:
           READ (operand);
+          return 10;
           break;
         case 0x11:
           WRITE (operand);
+          return 11;
           break;
         case 0x20:
           LOAD (operand);
+          return 20;
           break;
         case 0x21:
           STORE (operand);
+          return 21;
           break;
         case 0x40:
           JUMP (operand);
+          return 40;
           break;
         case 0x41:
           JNEG (operand);
+          return 41;
           break;
         case 0x42:
           JZ (operand);
+          return 42;
           break;
         case 0x43:
           HALT ();
+          return 43;
           break;
         case 0x72:
           MOVR (operand);
           break;
         case 0x55:
           JNS (operand);
+          break;
+        default:
+          sc_regSet (FLAG_E, 1);
+          return -2;
           break;
         }
     }
