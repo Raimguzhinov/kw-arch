@@ -4,6 +4,8 @@ int
 ALU (int command, int operand)
 {
   int tmp, num, res;
+  mi_showcursor ();
+
   // int error = 0;
   sc_memoryGet (operand, &tmp);
   switch (command)

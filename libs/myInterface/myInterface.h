@@ -62,5 +62,6 @@ bool mi_checkCorrectInput (const char buffer[10]);
 int mi_messageOutput (char *str, enum colors color);
 int mi_clearBuffIn ();
 int mi_hidecursor ();
+
 int mi_showcursor ();
 int currentToCounterSet ();
