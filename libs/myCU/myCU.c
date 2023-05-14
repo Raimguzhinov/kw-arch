@@ -153,6 +153,23 @@ JNS (int operand)
 }
 
 int
+LOGLC (int operand)
+{
+  int value = 0;
+  if (sc_memoryGet (operand, &value))
+    {
+      return -1;
+    }
+  int shift = accumulator & 0x3fff;
+  value <<= shift;
+  if (sc_memorySet (operand, value))
+    {
+      return -1;
+    }
+  return 0;
+}
+
+int
 CU ()
 {
   int value = 0;
@@ -208,6 +225,9 @@ CU ()
           break;
         case 0x55:
           JNS (operand);
+          break;
+        case 0x67:
+          LOGLC (operand);
           break;
         default:
           sc_regSet (FLAG_E, 1);
