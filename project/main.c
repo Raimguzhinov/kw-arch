@@ -47,10 +47,10 @@ main ()
           break;
 
         case L_KEY:
-          sc_memoryLoad ("memory.bin");
+          sc_memoryLoad ("resources/memory.bin");
           break;
         case S_KEY:
-          sc_memorySave ("memory.bin");
+          sc_memorySave ("resources/memory.bin");
           break;
 
         case R_KEY:

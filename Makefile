@@ -12,6 +12,10 @@ all: build_dirs binary
 binary: ${MYLIBS}
 	${CC} $(CFLAGS) -o ${BIN_DIR}/binary project/main.c $(LDLIBS)
 
+sat: ${MYLIBS}
+	${CC} $(CFLAGS) -o ${BIN_DIR}/sat project/assembler/sat.cpp $(LDLIBS)
+	./${BIN_DIR}/sat project/assembler/sat.sa resources/sat.o;
+
 test: ${MYLIBS}
 	${CC} $(CFLAGS) -o ${BIN_DIR}/testbch tests/bch.c $(LDLIBS)
 	${CC} $(CFLAGS) -o ${BIN_DIR}/testif tests/iface.c $(LDLIBS)
