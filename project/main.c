@@ -90,6 +90,8 @@ main ()
         }
     }
   while (on);
+  mt_clrscr();
+  rk_myTermRestore();
   mi_showCursor ();
   return 0;
 }
