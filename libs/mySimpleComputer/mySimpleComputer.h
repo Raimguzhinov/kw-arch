@@ -11,27 +11,28 @@
 #define FLAG_T 4 // Флаг игнорирования тактовых импульсов
 #define FLAG_E 5 // Флаг неверной команды
 
-#define READ 10
-#define WRITE 11
-#define LOAD 20
-#define STORE 21
-#define ADD 30
-#define SUB 31
-#define DIVIDE 32
-#define MUL 33
-#define JUMP 40
-#define JNEG 41
-#define JZ 42
-#define HALT 43
-#define NOT 51
+// #define READ 10
+// #define WRITE 11
+// #define LOAD 20
+// #define STORE 21
+// #define ADD 30
+// #define SUB 31
+// #define DIVIDE 32
+// #define MUL 33
+// #define JUMP 40
+// #define JNEG 41
+// #define JZ 42
+// #define HALT 43
+// #define NOT 51
 
 // Макрос для проверки существующей команды процессору
-#define CHECK_CPU_CMD(x)                                                      \
-  ((x == READ) || (x == WRITE) || (x == LOAD) || (x == STORE) || (x == ADD)   \
-   || (x == SUB) || (x == DIVIDE) || (x == MUL) || (x == JUMP) || (x == JNEG) \
-   || (x == JZ) || (x == HALT) || (x == NOT))                                 \
-      ? 1                                                                     \
-      : 0
+// #define CHECK_CPU_CMD(x) \
+//   ((x == READ) || (x == WRITE) || (x == LOAD) || (x == STORE) || (x == ADD)
+//   \
+//    || (x == SUB) || (x == DIVIDE) || (x == MUL) || (x == JUMP) || (x ==
+//    JNEG) \
+//    || (x == JZ) || (x == HALT) || (x == NOT)) \
+//       ? 1 \ : 0
 
 int sc_memoryInit ();
 int sc_memorySet (int address, int value);

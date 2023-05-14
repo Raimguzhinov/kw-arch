@@ -10,10 +10,10 @@ mi_displayMemoryValues ()
           mt_gotoXY (2 + (5 * j + j), 2 + i);
           int value;
           sc_memoryGet (i * 10 + j, &value);
-          if ((i * 10 + j) == instruction_counter)
-            {
-              mt_setbgcolor (GREEN);
-            }
+          if ((i * 10 + j) == currMemCell)
+            mt_setbgcolor (GREEN);
+          else
+            mt_setdfcolor ();
           int command, operand;
           sc_commandDecode (value, &command, &operand);
           char buffer[7];
@@ -21,19 +21,28 @@ mi_displayMemoryValues ()
               = sprintf (buffer, "%c%02X%02X", (value >> 14) ? '-' : '+',
                          abs ((value >> 7) & 0x7F), abs (value & 0x7F));
           write (STDOUT_FILENO, buffer, length);
-          mt_setdfcolor ();
         }
     }
+  mt_setdfcolor ();
   return 0;
 }
 
 int
 mi_displayAccumulator ()
 {
-  char buffer[5] = "+0001";
+  char buf[6];
   mt_gotoXY (70, 2);
-  write (STDOUT_FILENO, buffer, sizeof (buffer));
-  return (0);
+  if ((accumulator >> 14) & 0x1)
+    sprintf (buf, "-%04X", accumulator & 0x3fff);
+  else
+    sprintf (buf, "+%04X", accumulator & 0x3fff);
+  write (STDOUT_FILENO, buf, 5);
+  // char buff[32];
+  // accumulator < 0 ? sprintf(buff, "-%04d", accumulator * -1)
+  //                 : sprintf(buff, "+%04d", accumulator);
+  // write(STDOUT_FILENO, buff, 5);
+
+  return 0;
 }
 
 int
@@ -50,13 +59,18 @@ mi_displayInstructionCounter ()
 int
 mi_displayOperation ()
 {
-  int value;
-  sc_memoryGet (instruction_counter, &value);
+  int value = 0, command = 0, operand = 0;
+  if (sc_memoryGet (instruction_counter, &value))
+    return -1;
+  if (sc_commandDecode (value, &command, &operand))
+    {
+      value = 0;
+      command = 0;
+      operand = 0;
+    }
   mt_gotoXY (68, 8);
   char buf[32];
-  int command, operand;
-  sc_commandDecode (value, &command, &operand);
-  char sign = (!((value >> 14) & 1)) ? '+' : '-';
+  char sign = (value != 0) ? '+' : '-';
   sprintf (buf, " %c%02X : %02X", sign, command, operand);
   write (STDOUT_FILENO, buf, strlen (buf));
   return (0);
@@ -71,13 +85,15 @@ mi_displayFlags ()
       int value;
       sc_regGet (i + 1, &value);
       if (value == 1)
+        mt_setfgcolor (RED);
+      else
         mt_setfgcolor (NONACTIVE);
       mt_gotoXY (68 + (i * 2), 11);
       char buffer[2];
       int length = sprintf (buffer, "%c", flags[i]);
       write (STDOUT_FILENO, buffer, length);
-      mt_setdfcolor ();
     }
+  mt_setdfcolor ();
   return (0);
 }
 
@@ -132,28 +148,20 @@ mi_displayBigchars ()
 {
   int value, command, operand;
   short ind;
-  sc_memoryGet (instruction_counter, &value);
-  if (sc_memoryGet (instruction_counter, &value) < 0)
-    {
-      return -1;
-    }
-  if (sc_commandDecode (value & 0x3FFF, &command, &operand) < 0)
-    {
-      return -2;
-    }
+  if (sc_memoryGet (currMemCell, &value))
+    return -1;
 
-  if (!(value & 0x4000))
+  if (!(value >> 14))
     {
       ind = 16;
       bc_printbigchar (&font[ind * 2], 2, 14, GREEN, 0);
     }
-
   else
     {
       ind = 17;
       bc_printbigchar (&font[ind * 2], 2, 14, GREEN, 0);
     }
-
+  sc_commandDecode (value & 0x3FFF, &command, &operand);
   int ch;
   for (int i = 0; i < 4; ++i)
     {
@@ -200,9 +208,10 @@ mi_Counter ()
 }
 
 int
-mi_uiInit (int counter)
+mi_uiInit ()
 {
-  instruction_counter = counter;
+  currMemCell = 0;
+  instruction_counter = 0;
   int count_rows, count_columns;
   mt_getscreensize (&count_rows, &count_columns);
   if (count_rows < 30 || count_columns < 30)
@@ -227,6 +236,7 @@ mi_uiUpdate ()
   mi_displayMemoryValues ();
   mi_displayBigchars ();
   mt_gotoXY (1, 24);
+  write (1, "\033[2K", 4);
   write (STDOUT_FILENO, "Input/Output: ", strlen ("Input/Output: "));
 
   return 0;
@@ -264,7 +274,7 @@ mi_uisetValue ()
               RED);
           return -1;
         }
-      sc_memorySet (instruction_counter, number);
+      sc_memorySet (currMemCell, number);
     }
   else if (buffer[0] != '-')
     {
@@ -276,7 +286,7 @@ mi_uisetValue ()
               RED);
           return -1;
         }
-      sc_memorySet (instruction_counter, number);
+      sc_memorySet (currMemCell, number);
     }
   else if (buffer[0] == '-')
     {
@@ -289,7 +299,7 @@ mi_uisetValue ()
           return -1;
         }
       number = number | 0x4000;
-      sc_memorySet (instruction_counter, number);
+      sc_memorySet (currMemCell, number);
     }
 
   return 0;
@@ -339,5 +349,38 @@ mi_clearBuffIn ()
       c = getchar ();
     }
   while (c != '\n' && c != '\0');
+  return 0;
+}
+
+int
+mi_hidecursor ()
+{
+  write (1, "\E[?25l\E[?1c", 8);
+  return 0;
+}
+
+int
+mi_showcursor ()
+{
+  write (1, "\E[?25h\E?8c", 8);
+  return 0;
+}
+
+int
+currentToCounterSet ()
+{
+  char buf[6];
+  int value = 0, op = 0, com = 0;
+  sc_memoryGet (currMemCell, &value);
+  mt_gotoXY (currMemCell / 10 + 2, currMemCell % 10 * 6 + 2);
+  sc_commandDecode (value & 0x3fff, &com, &op);
+  if ((value >> 14) & 1)
+    sprintf (buf, "-%02X%02X", com, op);
+  else
+    sprintf (buf, "+%02X%02X", com, op);
+  write (1, buf, 5);
+  currMemCell = instruction_counter;
+  sc_memoryGet (currMemCell, &value);
+  // newNumPrint (0x8fff);
   return 0;
 }

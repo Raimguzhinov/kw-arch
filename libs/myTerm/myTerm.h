@@ -5,6 +5,8 @@
 #include <unistd.h>
 
 extern int instruction_counter;
+extern int accumulator;
+extern short currMemCell;
 
 #define ACS_CKBOARD 'a'  // штриховка
 #define ACS_ULCORNER 'l' // левый верхний угол
