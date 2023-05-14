@@ -213,3 +213,29 @@ CU ()
     }
   return 0;
 }
+
+void
+mc_oneTactPulse ()
+{
+  currMemCell = instruction_counter;
+  mi_uiUpdate ();
+  sc_regSet (FLAG_T, 0);
+  int cu_result = CU ();
+  int value;
+  sc_regGet (FLAG_T, &value);
+  if (!(cu_result == 40 || cu_result == 41 || cu_result == 42
+        || cu_result == -2))
+    {
+      sc_regSet (FLAG_E, 0);
+      if ((instruction_counter >= 0 && instruction_counter <= 99) && !value)
+        {
+          if (instruction_counter != 99)
+            {
+              instruction_counter++;
+            }
+          else
+            instruction_counter = 0;
+        }
+    }
+  sc_regSet (FLAG_T, 1);
+}

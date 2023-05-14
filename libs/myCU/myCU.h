@@ -17,3 +17,4 @@ int mc_jz (int operand);
 int mc_halt ();
 int mc_loglc (int operand);
 int CU ();
+void mc_oneTactPulse ();
