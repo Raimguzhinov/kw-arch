@@ -1,5 +1,5 @@
 LIB_NAME = myALU
-CFLAGS = -Wall -I ../myALU -I ../myInterface -I ../myBigChars -I ../myTerm -I ../mySimpleComputer
+CFLAGS = -Wall -I ../myALU -I ../myInterface -I ../myBigChars -I ../myTerm -I ../mySimpleComputer -I../myReadKey
 
 .PHONY: all
 

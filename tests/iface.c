@@ -5,7 +5,7 @@ int
 main ()
 {
   int value = 0;
-  bc_initfont ("mybch.font");
+  bc_fontInit ("mybch.font");
   sc_memoryInit ();
   printf ("\n>> инициализирована память\n");
   for (int i = 0; i < RAM_SIZE; i++)
@@ -15,11 +15,6 @@ main ()
       sc_memoryGet (i, &value);
       printf ("RAM[%d] = %d\n", i, value);
     }
-  // sc_memorySet (0, 99);
-  // sc_memorySave ("memory.bin");
-  // printf ("\n>> сохранение файла\n");
-  // sc_memoryGet (0, &value);
-  // printf ("RAM[0] = %d\n", value);
   sc_memoryLoad ("memory.bin");
   printf ("\n>> чтение файла\n");
   for (int i = 0; i < RAM_SIZE; i++)
@@ -52,7 +47,7 @@ main ()
   sc_memorySet (counter, 0x0);
   sc_memorySet (counter - 2, 0x2be4);
   getchar_unlocked ();
-  mi_uiInit (counter);
+  mi_uiInit ();
   mi_uiUpdate ();
   return 0;
 }

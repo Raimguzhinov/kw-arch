@@ -9,8 +9,8 @@ bool on = 1;
 int
 main ()
 {
-  bc_initfont ("mybch.font");
   rk_myTermSave ();
+  bc_fontInit ("mybch.font");
   sc_memoryInit ();
   for (int i = 0; i < RAM_SIZE; i++)
     sc_memorySet (i, i + 1);
@@ -25,8 +25,7 @@ main ()
   do
     {
       mi_uiUpdate ();
-      mi_hidecursor ();
-
+      mi_hideCursor ();
       rk_readKey (&key);
       switch (key)
         {
@@ -47,68 +46,37 @@ main ()
           break;
 
         case L_KEY:
-          sc_memoryLoad ("resources/memory.bin");
+          mi_dirMenu ();
           break;
         case S_KEY:
-          sc_memorySave ("resources/memory.bin");
+          mi_memorySave ();
           break;
 
         case R_KEY:
           sc_regInit ();
           mi_displayFlags ();
           setitimer (ITIMER_REAL, &nval, &oval);
-          // raise (SIGALRM);
           break;
         case T_KEY:
-
-          currMemCell = instruction_counter;
-          mi_uiUpdate ();
-          sc_regSet (FLAG_T, 0);
-          int cu_result = CU ();
-          int value;
-          sc_regGet (FLAG_T, &value);
-          if (!(cu_result == 40 || cu_result == 41 || cu_result == 42
-                || cu_result == -2))
-            {
-              sc_regSet (FLAG_E, 0);
-              if ((instruction_counter >= 0 && instruction_counter <= 99)
-                  && !value)
-                {
-                  if (instruction_counter != 99)
-                    {
-                      instruction_counter++;
-                    }
-                  else
-                    instruction_counter = 0;
-                }
-            }
-          sc_regSet (FLAG_T, 1);
+          mc_oneTactPulse ();
           break;
         case I_KEY:
-          raise (SIGUSR1);
-          accumulator = 0;
-          instruction_counter = 0;
-          currMemCell = 0;
+          sc_restart ();
           mi_displayInstructionCounter ();
-          sc_memoryInit ();
-          sc_regSet (FLAG_P, 0);
-          sc_regSet (FLAG_0, 0);
-          sc_regSet (FLAG_M, 0);
-          sc_regSet (FLAG_T, 1);
-          sc_regSet (FLAG_E, 0);
           mi_uiUpdate ();
           break;
 
         case F5_KEY:
+          mi_accum ();
           break;
 
         case F6_KEY:
-          mi_Counter ();
+          mi_counter ();
           break;
 
         case ENTER_KEY:
-          mi_showcursor ();
-          mi_uisetValue ();
+          mi_showCursor ();
+          mi_uiSetValue ();
           mi_uiUpdate ();
           break;
 
@@ -122,6 +90,8 @@ main ()
         }
     }
   while (on);
-  mi_showcursor ();
+  mt_clrscr ();
+  rk_myTermRestore ();
+  mi_showCursor ();
   return 0;
 }

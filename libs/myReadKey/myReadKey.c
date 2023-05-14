@@ -38,10 +38,9 @@ rk_readKey (enum keys *key)
             case 'D':
               *key = LEFT_KEY;
               break;
-            case '5':
-              *key = F5_KEY;
-              break;
             case '1':
+              if (buffer[3] == '5' && buffer[4] == '~')
+                *key = F5_KEY;
               if (buffer[3] == '7' && buffer[4] == '~')
                 *key = F6_KEY;
               break;

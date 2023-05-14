@@ -2,8 +2,6 @@
 #include <myCU.h>
 #include <myInterface.h>
 #include <mySimpleComputer.h>
-#include <signal.h>
-#include <sys/time.h>
 
 void ms_setTimer (struct itimerval *nval, struct itimerval *oval);
 void ms_setSignals ();

@@ -4,10 +4,6 @@
 #include <termios.h>
 #include <unistd.h>
 
-extern int instruction_counter;
-extern int accumulator;
-extern short currMemCell;
-
 #define ACS_CKBOARD 'a'  // штриховка
 #define ACS_ULCORNER 'l' // левый верхний угол
 #define ACS_URCORNER 'k' // правый верхний угол
@@ -33,8 +29,8 @@ enum colors
 
 int mt_clrscr (void);
 int mt_gotoXY (int x, int y);
-int mt_getscreensize (int *rows, int *cols);
-int mt_setfgcolor (enum colors color);
-int mt_setbgcolor (enum colors color);
-int mt_setdfcolor (void);
-int mt_printsymbol (char symbol);
+int mt_getScreenSize (int *rows, int *cols);
+int mt_setFgColor (enum colors color);
+int mt_setBgColor (enum colors color);
+int mt_setDfColor (void);
+int mt_printSymbol (char symbol);

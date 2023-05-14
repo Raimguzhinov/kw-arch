@@ -8,31 +8,6 @@ main ()
   sc_memoryInit ();
   printf ("\n>> инициализирована память\n");
   rk_myTermSave ();
-  // enum keys key;
-  // int value;
-  // sc_memorySet (0, 5);
-  // sc_memoryGet (0, &value);
-  // printf ("RAM[0] = %d\n", value);
-  // printf ("нажмите S для сохранения\n");
-  // rk_readKey (&key);
-  // if (key == S_KEY)
-  // {
-  //   sc_memorySave ("memory.bin");
-  //   printf ("сохранено успешно!\n");
-  // }
-  // sc_memorySet (0, 6);
-  // sc_memoryGet (0, &value);
-  // printf ("RAM[0] = %d\n", value);
-  // printf ("значение изменено! нажмите L загрузки предыдущего значения\n");
-  // rk_readKey (&key);
-  // if (key == L_KEY)
-  // {
-  //   sc_memoryLoad ("memory.bin");
-  //   sc_memoryGet (0, &value);
-  //   printf ("RAM[0] = %d\n", value);
-  // }
-  // key = ESC_KEY;
-  // printf ("ESC_KEY =  %d\n", key);
 
   enum keys key;
   do
@@ -86,7 +61,6 @@ main ()
           break;
         case NOTHING_KEY:
           printf ("ничего не нажато\n");
-          // on = 0;
           break;
         default:
           break;

@@ -1,10 +1,10 @@
 #include "myCU.h"
 
 int
-READ (int operand)
+mc_read (int operand)
 {
   rk_myTermRestore ();
-  mi_showcursor ();
+  mi_showCursor ();
   char buf[10];
   bool corrent_input = true;
   mt_gotoXY (1, 25);
@@ -43,7 +43,7 @@ READ (int operand)
 }
 
 int
-WRITE (int operand)
+mc_write (int operand)
 {
   char buf[6];
   int value;
@@ -60,7 +60,7 @@ WRITE (int operand)
 }
 
 int
-LOAD (int operand)
+mc_load (int operand)
 {
   int value = 0;
   if (sc_memoryGet (operand, &value))
@@ -70,7 +70,7 @@ LOAD (int operand)
 }
 
 int
-STORE (int operand)
+mc_store (int operand)
 {
   if (sc_memorySet (operand, accumulator))
     return -1;
@@ -78,7 +78,7 @@ STORE (int operand)
 }
 
 int
-JUMP (int operand)
+mc_jump (int operand)
 {
   if (operand > 99)
     {
@@ -91,7 +91,7 @@ JUMP (int operand)
 }
 
 int
-JNEG (int operand)
+mc_jneg (int operand)
 {
   if ((accumulator >> 14) == 0 || (accumulator & 0x3fff) == 0)
     {
@@ -109,7 +109,7 @@ JNEG (int operand)
 }
 
 int
-JZ (int operand)
+mc_jz (int operand)
 {
   if (accumulator & 0x3fff)
     {
@@ -127,33 +127,14 @@ JZ (int operand)
 }
 
 int
-MOVR (int operand)
-{
-  int value;
-  sc_memoryGet (accumulator, &value);
-  sc_memorySet (operand, value);
-  return 0;
-}
-
-int
-HALT ()
+mc_halt ()
 {
   sc_regSet (FLAG_T, 1);
   return 0;
 }
 
 int
-JNS (int operand)
-{
-  if (accumulator > 0)
-    {
-      instruction_counter = operand;
-    }
-  return 0;
-}
-
-int
-LOGLC (int operand)
+mc_loglc (int operand)
 {
   int value = 0;
   if (sc_memoryGet (operand, &value))
@@ -188,46 +169,41 @@ CU ()
     {
       switch (command)
         {
-        case 0x10:
-          READ (operand);
-          return 10;
+        case READ:
+          mc_read (operand);
+          return READ;
           break;
-        case 0x11:
-          WRITE (operand);
-          return 11;
+        case WRITE:
+          mc_write (operand);
+          return WRITE;
           break;
-        case 0x20:
-          LOAD (operand);
-          return 20;
+        case LOAD:
+          mc_load (operand);
+          return LOAD;
           break;
-        case 0x21:
-          STORE (operand);
-          return 21;
+        case STORE:
+          mc_store (operand);
+          return STORE;
           break;
-        case 0x40:
-          JUMP (operand);
-          return 40;
+        case JUMP:
+          mc_jump (operand);
+          return JUMP;
           break;
-        case 0x41:
-          JNEG (operand);
-          return 41;
+        case JNEG:
+          mc_jneg (operand);
+          return JNEG;
           break;
-        case 0x42:
-          JZ (operand);
-          return 42;
+        case JZ:
+          mc_jz (operand);
+          return JZ;
           break;
-        case 0x43:
-          HALT ();
-          return 43;
+        case HALT:
+          mc_halt ();
+          return HALT;
           break;
-        case 0x72:
-          MOVR (operand);
-          break;
-        case 0x55:
-          JNS (operand);
-          break;
-        case 0x67:
-          LOGLC (operand);
+        case LOGLC:
+          mc_loglc (operand);
+          return LOGLC;
           break;
         default:
           sc_regSet (FLAG_E, 1);
@@ -236,4 +212,30 @@ CU ()
         }
     }
   return 0;
+}
+
+void
+mc_oneTactPulse ()
+{
+  currMemCell = instruction_counter;
+  mi_uiUpdate ();
+  sc_regSet (FLAG_T, 0);
+  int cu_result = CU ();
+  int value;
+  sc_regGet (FLAG_T, &value);
+  if (!(cu_result == 40 || cu_result == 41 || cu_result == 42
+        || cu_result == -2))
+    {
+      sc_regSet (FLAG_E, 0);
+      if ((instruction_counter >= 0 && instruction_counter <= 99) && !value)
+        {
+          if (instruction_counter != 99)
+            {
+              instruction_counter++;
+            }
+          else
+            instruction_counter = 0;
+        }
+    }
+  sc_regSet (FLAG_T, 1);
 }

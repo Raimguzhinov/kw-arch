@@ -12,9 +12,11 @@ all: build_dirs binary
 binary: ${MYLIBS}
 	${CC} $(CFLAGS) -o ${BIN_DIR}/binary project/main.c $(LDLIBS)
 
-sat: ${MYLIBS}
-	${CC} $(CFLAGS) -o ${BIN_DIR}/sat project/assembler/sat.cpp $(LDLIBS)
+.ONESHELL:
+sat: ${MYLIBS} project/commands.h
+	clang++ -std=c++17 $(CFLAGS) -I project/commands.h -o ${BIN_DIR}/sat project/assembler/sat.cpp $(LDLIBS)
 	./${BIN_DIR}/sat project/assembler/sat.sa resources/sat.o;
+	${MAKE} all run
 
 test: ${MYLIBS}
 	${CC} $(CFLAGS) -o ${BIN_DIR}/testbch tests/bch.c $(LDLIBS)

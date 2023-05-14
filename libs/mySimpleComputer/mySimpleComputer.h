@@ -1,5 +1,7 @@
 #pragma once
+#include <signal.h>
 #include <stdio.h>
+#include <sys/time.h>
 
 #define CPU_CMDS_COUNT 38 // Количество команд
 #define RAM_SIZE 100      // Размер оперативной памяти
@@ -11,28 +13,9 @@
 #define FLAG_T 4 // Флаг игнорирования тактовых импульсов
 #define FLAG_E 5 // Флаг неверной команды
 
-// #define READ 10
-// #define WRITE 11
-// #define LOAD 20
-// #define STORE 21
-// #define ADD 30
-// #define SUB 31
-// #define DIVIDE 32
-// #define MUL 33
-// #define JUMP 40
-// #define JNEG 41
-// #define JZ 42
-// #define HALT 43
-// #define NOT 51
-
-// Макрос для проверки существующей команды процессору
-// #define CHECK_CPU_CMD(x) \
-//   ((x == READ) || (x == WRITE) || (x == LOAD) || (x == STORE) || (x == ADD)
-//   \
-//    || (x == SUB) || (x == DIVIDE) || (x == MUL) || (x == JUMP) || (x ==
-//    JNEG) \
-//    || (x == JZ) || (x == HALT) || (x == NOT)) \
-//       ? 1 \ : 0
+extern int instruction_counter;
+extern int accumulator;
+extern short currMemCell;
 
 int sc_memoryInit ();
 int sc_memorySet (int address, int value);
@@ -44,3 +27,4 @@ int sc_regSet (int registr, int value);
 int sc_regGet (int registr, int *value);
 int sc_commandEncode (int command, int operand, int *value);
 int sc_commandDecode (int value, int *command, int *operand);
+void sc_restart ();

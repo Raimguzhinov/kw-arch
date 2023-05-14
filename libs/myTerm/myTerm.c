@@ -1,10 +1,6 @@
 #include "myTerm.h"
 #include <string.h>
 
-int instruction_counter;
-int accumulator;
-short currMemCell;
-
 int
 mt_clrscr ()
 {
@@ -17,7 +13,7 @@ int
 mt_gotoXY (int x, int y)
 {
   int count_rows, count_columns;
-  if (mt_getscreensize (&count_rows, &count_columns) == -1)
+  if (mt_getScreenSize (&count_rows, &count_columns) == -1)
     {
       return -1;
     }
@@ -32,7 +28,7 @@ mt_gotoXY (int x, int y)
 }
 
 int
-mt_getscreensize (int *rows, int *columns)
+mt_getScreenSize (int *rows, int *columns)
 {
   struct winsize window_size;
   if (ioctl (1, TIOCGWINSZ, &window_size))
@@ -45,7 +41,7 @@ mt_getscreensize (int *rows, int *columns)
 }
 
 int
-mt_setfgcolor (enum colors color)
+mt_setFgColor (enum colors color)
 {
   char buf[16];
   int len = sprintf (buf, "\033[38;5;%dm", color);
@@ -54,7 +50,7 @@ mt_setfgcolor (enum colors color)
 }
 
 int
-mt_setbgcolor (enum colors color)
+mt_setBgColor (enum colors color)
 {
   char buf[16];
   int len = sprintf (buf, "\033[48;5;%dm", color);
@@ -63,7 +59,7 @@ mt_setbgcolor (enum colors color)
 }
 
 int
-mt_setdfcolor ()
+mt_setDfColor ()
 {
   const char *str = "\033[0m";
   write (STDOUT_FILENO, str, strlen (str));
@@ -71,7 +67,7 @@ mt_setdfcolor ()
 }
 
 int
-mt_printsymbol (char symbol)
+mt_printSymbol (char symbol)
 {
   char buf[16];
   int len = sprintf (buf, "\033(0%c\033(B", symbol);
