@@ -1,10 +1,6 @@
 #include "myTerm.h"
 #include <string.h>
 
-int instruction_counter;
-int accumulator;
-short currMemCell;
-
 int
 mt_clrscr ()
 {
