@@ -9,8 +9,8 @@ bool on = 1;
 int
 main ()
 {
-  bc_initfont ("mybch.font");
   rk_myTermSave ();
+  bc_fontInit ("mybch.font");
   sc_memoryInit ();
   for (int i = 0; i < RAM_SIZE; i++)
     sc_memorySet (i, i + 1);
@@ -25,7 +25,7 @@ main ()
   do
     {
       mi_uiUpdate ();
-      mi_hidecursor ();
+      mi_hideCursor ();
 
       rk_readKey (&key);
       switch (key)
@@ -103,12 +103,12 @@ main ()
           break;
 
         case F6_KEY:
-          mi_Counter ();
+          mi_counter ();
           break;
 
         case ENTER_KEY:
-          mi_showcursor ();
-          mi_uisetValue ();
+          mi_showCursor ();
+          mi_uiSetValue ();
           mi_uiUpdate ();
           break;
 
@@ -122,6 +122,6 @@ main ()
         }
     }
   while (on);
-  mi_showcursor ();
+  mi_showCursor ();
   return 0;
 }

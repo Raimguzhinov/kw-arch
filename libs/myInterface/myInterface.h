@@ -52,16 +52,13 @@ int mi_displayOperation ();
 int mi_displayFlags ();
 int mi_displayBoxes ();
 int mi_displayTexts ();
-int mi_displayBigchars ();
-
-int mi_Counter ();
+int mi_displayBigChars ();
+int mi_counter ();
 int mi_uiInit ();
 int mi_uiUpdate ();
-int mi_uisetValue ();
+int mi_uiSetValue ();
 bool mi_checkCorrectInput (const char buffer[10]);
 int mi_messageOutput (char *str, enum colors color);
 int mi_clearBuffIn ();
-int mi_hidecursor ();
-
-int mi_showcursor ();
-int currentToCounterSet ();
+int mi_hideCursor ();
+int mi_showCursor ();

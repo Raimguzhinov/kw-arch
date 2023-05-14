@@ -4,9 +4,7 @@ int
 ALU (int command, int operand)
 {
   int tmp, num, res;
-  mi_showcursor ();
-
-  // int error = 0;
+  mi_showCursor ();
   sc_memoryGet (operand, &tmp);
   switch (command)
     {
@@ -19,7 +17,6 @@ ALU (int command, int operand)
           if (res >> 14)
             {
               sc_regSet (FLAG_P, 1);
-              // error = -1;
             }
           if (accumulator >> 14)
             res |= 0x4000;
@@ -65,7 +62,6 @@ ALU (int command, int operand)
           if (res >> 14)
             {
               sc_regSet (FLAG_P, 1);
-              // error = -1;
             }
           if (accumulator >> 14)
             res |= 0x4000;
@@ -92,7 +88,6 @@ ALU (int command, int operand)
       if (res >> 14)
         {
           sc_regSet (FLAG_P, 1);
-          // error = 1;
         }
       if (accumulator >> 14 != num >> 14)
         res |= 0x4000;

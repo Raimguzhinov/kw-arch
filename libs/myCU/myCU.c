@@ -4,7 +4,7 @@ int
 mc_read (int operand)
 {
   rk_myTermRestore ();
-  mi_showcursor ();
+  mi_showCursor ();
   char buf[10];
   bool corrent_input = true;
   mt_gotoXY (1, 25);

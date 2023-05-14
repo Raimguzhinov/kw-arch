@@ -11,9 +11,9 @@ mi_displayMemoryValues ()
           int value;
           sc_memoryGet (i * 10 + j, &value);
           if ((i * 10 + j) == currMemCell)
-            mt_setbgcolor (GREEN);
+            mt_setBgColor (GREEN);
           else
-            mt_setdfcolor ();
+            mt_setDfColor ();
           int command, operand;
           sc_commandDecode (value, &command, &operand);
           char buffer[7];
@@ -23,7 +23,7 @@ mi_displayMemoryValues ()
           write (STDOUT_FILENO, buffer, length);
         }
     }
-  mt_setdfcolor ();
+  mt_setDfColor ();
   return 0;
 }
 
@@ -37,11 +37,6 @@ mi_displayAccumulator ()
   else
     sprintf (buf, "+%04X", accumulator & 0x3fff);
   write (STDOUT_FILENO, buf, 5);
-  // char buff[32];
-  // accumulator < 0 ? sprintf(buff, "-%04d", accumulator * -1)
-  //                 : sprintf(buff, "+%04d", accumulator);
-  // write(STDOUT_FILENO, buff, 5);
-
   return 0;
 }
 
@@ -51,9 +46,8 @@ mi_displayInstructionCounter ()
   char buffer[6];
   mt_gotoXY (70, 5);
   sprintf (buffer, "+%04d", instruction_counter);
-  // write (STDOUT_FILENO, buff, 5);
   write (STDOUT_FILENO, buffer, sizeof (buffer));
-  return (0);
+  return 0;
 }
 
 int
@@ -73,7 +67,7 @@ mi_displayOperation ()
   char sign = (value != 0) ? '+' : '-';
   sprintf (buf, " %c%02X : %02X", sign, command, operand);
   write (STDOUT_FILENO, buf, strlen (buf));
-  return (0);
+  return 0;
 }
 
 int
@@ -85,16 +79,16 @@ mi_displayFlags ()
       int value;
       sc_regGet (i + 1, &value);
       if (value == 1)
-        mt_setfgcolor (RED);
+        mt_setFgColor (RED);
       else
-        mt_setfgcolor (NONACTIVE);
+        mt_setFgColor (NONACTIVE);
       mt_gotoXY (68 + (i * 2), 11);
       char buffer[2];
       int length = sprintf (buffer, "%c", flags[i]);
       write (STDOUT_FILENO, buffer, length);
     }
-  mt_setdfcolor ();
-  return (0);
+  mt_setDfColor ();
+  return 0;
 }
 
 int
@@ -144,7 +138,7 @@ mi_displayTexts ()
 }
 
 int
-mi_displayBigchars ()
+mi_displayBigChars ()
 {
   int value, command, operand;
   short ind;
@@ -154,12 +148,12 @@ mi_displayBigchars ()
   if (!(value >> 14))
     {
       ind = 16;
-      bc_printbigchar (&font[ind * 2], 2, 14, GREEN, 0);
+      bc_printBigChar (&font[ind * 2], 2, 14, GREEN, 0);
     }
   else
     {
       ind = 17;
-      bc_printbigchar (&font[ind * 2], 2, 14, GREEN, 0);
+      bc_printBigChar (&font[ind * 2], 2, 14, GREEN, 0);
     }
   sc_commandDecode (value & 0x3FFF, &command, &operand);
   int ch;
@@ -180,7 +174,7 @@ mi_displayBigchars ()
           ch = (operand)&0xF;
           break;
         }
-      bc_printbigchar (&font[ch * 2], 2 + 8 * (i + 1) + 2 * (i + 1), 14, GREEN,
+      bc_printBigChar (&font[ch * 2], 2 + 8 * (i + 1) + 2 * (i + 1), 14, GREEN,
                        0);
     }
 
@@ -188,7 +182,7 @@ mi_displayBigchars ()
 }
 
 int
-mi_Counter ()
+mi_counter ()
 {
   char buffer[32];
   write (1, "\033[2K", 4);
@@ -213,7 +207,7 @@ mi_uiInit ()
   currMemCell = 0;
   instruction_counter = 0;
   int count_rows, count_columns;
-  mt_getscreensize (&count_rows, &count_columns);
+  mt_getScreenSize (&count_rows, &count_columns);
   if (count_rows < 30 || count_columns < 30)
     {
       printf ("\nмаленький размер окна!!!");
@@ -234,7 +228,7 @@ mi_uiUpdate ()
   mi_displayOperation ();
   mi_displayFlags ();
   mi_displayMemoryValues ();
-  mi_displayBigchars ();
+  mi_displayBigChars ();
   mt_gotoXY (1, 24);
   write (1, "\033[2K", 4);
   write (STDOUT_FILENO, "Input/Output: ", strlen ("Input/Output: "));
@@ -243,7 +237,7 @@ mi_uiUpdate ()
 }
 
 int
-mi_uisetValue ()
+mi_uiSetValue ()
 {
 
   char buffer[10];
@@ -353,34 +347,15 @@ mi_clearBuffIn ()
 }
 
 int
-mi_hidecursor ()
+mi_hideCursor ()
 {
   write (1, "\E[?25l\E[?1c", 8);
   return 0;
 }
 
 int
-mi_showcursor ()
+mi_showCursor ()
 {
   write (1, "\E[?25h\E?8c", 8);
-  return 0;
-}
-
-int
-currentToCounterSet ()
-{
-  char buf[6];
-  int value = 0, op = 0, com = 0;
-  sc_memoryGet (currMemCell, &value);
-  mt_gotoXY (currMemCell / 10 + 2, currMemCell % 10 * 6 + 2);
-  sc_commandDecode (value & 0x3fff, &com, &op);
-  if ((value >> 14) & 1)
-    sprintf (buf, "-%02X%02X", com, op);
-  else
-    sprintf (buf, "+%02X%02X", com, op);
-  write (1, buf, 5);
-  currMemCell = instruction_counter;
-  sc_memoryGet (currMemCell, &value);
-  // newNumPrint (0x8fff);
   return 0;
 }
