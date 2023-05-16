@@ -16,7 +16,7 @@ mi_displayMemoryValues ()
           mt_gotoXY (2 + (5 * j + j), 2 + i);
           int value;
           sc_memoryGet (i * 10 + j, &value);
-          if ((i * 10 + j) == currMemCell && !halt)
+          if ((i * 10 + j) == currMemCell && !sc_halt)
             mt_setBgColor (PURPLE);
           else
             mt_setDfColor ();
@@ -38,7 +38,7 @@ mi_displayAccumulator ()
 {
   char buf[6];
   mt_gotoXY (70, 2);
-  if (halt)
+  if (sc_halt)
     mt_setBgColor (GREEN);
   if ((accumulator >> 14) & 0x1)
     sprintf (buf, "-%04X", accumulator & 0x3fff);
@@ -213,7 +213,7 @@ mi_displayAccumulatorBigChars ()
 int
 mi_counter ()
 {
-  halt = false;
+  sc_halt = false;
   char buffer[32];
   write (STDOUT_FILENO, "\033[2K", 4);
   mt_gotoXY (1, 24);
@@ -238,8 +238,8 @@ mi_counter ()
 int
 mi_accum ()
 {
-  halt = true;
-  mi_uiUpdate (halt);
+  sc_halt = true;
+  mi_uiUpdate (sc_halt);
   char buf[10];
   char *pEnd;
   write (STDOUT_FILENO, "\033[2K", 4);
@@ -480,7 +480,7 @@ mi_hideCursor ()
 int
 mi_showCursor ()
 {
-  halt = false;
+  sc_halt = false;
   write (STDOUT_FILENO, "\E[?25h\E?8c", 11);
   return 0;
 }
@@ -494,7 +494,7 @@ mi_dirMenu ()
   char dir_path[] = "resources/";
   int selected = 0;
   int total = 0;
-  halt = false;
+  sc_halt = false;
   raise (SIGUSR1);
   if ((dir = opendir (dir_path)) != NULL)
     {
@@ -541,7 +541,7 @@ mi_dirMenu ()
             { // ESC
               mt_clrscr ();
               mi_uiInit ();
-              mi_uiUpdate (halt);
+              mi_uiUpdate (sc_halt);
               break;
             }
           else if (key == ENTER_KEY)
@@ -562,7 +562,7 @@ mi_dirMenu ()
                           mi_uiInit ();
                           sc_restart ();
                           mi_displayInstructionCounter ();
-                          mi_uiUpdate (halt);
+                          mi_uiUpdate (sc_halt);
                           sc_memoryLoad (path);
                           return;
                         }
@@ -598,7 +598,7 @@ mi_dirMenu ()
 int
 mi_memorySave ()
 {
-  halt = false;
+  sc_halt = false;
   char buf[100];
   memset (buf, 0, sizeof (buf));
   mt_gotoXY (1, 24);
@@ -629,7 +629,7 @@ mi_memorySave ()
 int
 mi_currMemMove (enum keys direction)
 {
-  halt = false;
+  sc_halt = false;
   mt_gotoXY (currMemCell / 10 + 2, currMemCell % 10 * 6 + 2);
   switch (direction)
     {

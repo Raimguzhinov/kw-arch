@@ -5,7 +5,7 @@ MYLIBS = mySimpleComputer myTerm myBigChars myInterface myReadKey myALU myCU myS
 CFLAGS = -Wall ${addprefix -I libs/,${LIBS_DIRS}}
 LDLIBS = ${addprefix -L libs/,${LIBS_DIRS}} ${addprefix -l,${LIBS_DIRS}}
 
-.PHONY: all build_dirs run
+.PHONY: all build_dirs run format
 
 all: build_dirs binary
 
@@ -40,6 +40,11 @@ build_dirs:
 
 run:
 	./${BIN_DIR}/binary;
+
+format:
+	clang-format --style GNU -i --verbose project/main.c
+	clang-format --style GNU -i --verbose libs/*/*.c
+	clang-format --style GNU -i --verbose libs/*/*.h
 
 clean:
 	${RM} ./${BIN_DIR}/*

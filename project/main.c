@@ -5,7 +5,7 @@
 #include <myTerm.h>
 
 bool on = true;
-bool halt = false;
+bool sc_halt = false;
 
 int
 main ()
@@ -21,7 +21,7 @@ main ()
   ms_setTimer (&nval, &oval);
   do
     {
-      mi_uiUpdate (halt);
+      mi_uiUpdate (sc_halt);
       mi_hideCursor ();
       rk_readKey (&key);
       switch (key)
@@ -59,10 +59,10 @@ main ()
           break;
         case NOTHING_KEY:
         case INVALID_KEY:
-          halt = true;
+          sc_halt = true;
           break;
         case ESC_KEY:
-          halt = false;
+          sc_halt = false;
           on = false;
           break;
         }

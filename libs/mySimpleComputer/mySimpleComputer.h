@@ -14,10 +14,10 @@
 #define FLAG_T 4 // Флаг игнорирования тактовых импульсов
 #define FLAG_E 5 // Флаг неверной команды
 
+extern bool sc_halt;
 extern int instruction_counter;
 extern int accumulator;
 extern short currMemCell;
-extern bool halt;
 
 int sc_memoryInit ();
 int sc_memorySet (int address, int value);

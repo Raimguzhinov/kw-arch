@@ -37,7 +37,7 @@ ms_timerHandler (int sig)
         }
     }
   currMemCell = instruction_counter;
-  mi_uiUpdate (halt);
+  mi_uiUpdate (sc_halt);
   if (!value)
     {
       ualarm (100000, 0);
