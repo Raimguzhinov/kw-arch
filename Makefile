@@ -13,9 +13,17 @@ binary: ${MYLIBS}
 	${CC} $(CFLAGS) -o ${BIN_DIR}/binary project/main.c $(LDLIBS)
 
 .ONESHELL:
-sat: ${MYLIBS} project/commands.h
+sat: project/commands.h
 	clang++ -std=c++17 $(CFLAGS) -I project/commands.h -o ${BIN_DIR}/sat project/assembler/sat.cpp $(LDLIBS)
-	./${BIN_DIR}/sat project/assembler/sat.sa resources/sat.o;
+	./${BIN_DIR}/sat project/assembler/subtraction.sa resources/assembly_to_machine.o;
+	${MAKE} all run
+
+.ONESHELL:
+sbt: project/commands.h
+	clang++ -std=c++17 project/basic/sbt.cpp -o ${BIN_DIR}/sbt
+	./${BIN_DIR}/sbt project/basic/factorial.sb project/assembler/factorial.sa;
+	clang++ -std=c++17 $(CFLAGS) -I project/commands.h -o ${BIN_DIR}/sbat project/assembler/sat.cpp $(LDLIBS)
+	./${BIN_DIR}/sbat project/assembler/factorial.sa resources/basic_to_assembly.o;
 	${MAKE} all run
 
 test: ${MYLIBS}
@@ -37,3 +45,4 @@ clean:
 	${RM} ./${BIN_DIR}/*
 	${RM} $(shell find ./libs -name \*.a)
 	${RM} $(shell find ./libs -name \*.o)
+	${RM} $(shell find ./resources -name \*.o)
