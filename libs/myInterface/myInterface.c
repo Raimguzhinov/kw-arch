@@ -4,6 +4,8 @@
 #include "myTerm.h"
 #include <signal.h>
 
+bool resize = false;
+
 int
 mi_displayMemoryValues ()
 {
@@ -14,7 +16,7 @@ mi_displayMemoryValues ()
           mt_gotoXY (2 + (5 * j + j), 2 + i);
           int value;
           sc_memoryGet (i * 10 + j, &value);
-          if ((i * 10 + j) == currMemCell)
+          if ((i * 10 + j) == currMemCell && !halt)
             mt_setBgColor (PURPLE);
           else
             mt_setDfColor ();
@@ -36,11 +38,13 @@ mi_displayAccumulator ()
 {
   char buf[6];
   mt_gotoXY (70, 2);
+  if (halt) mt_setBgColor (GREEN);
   if ((accumulator >> 14) & 0x1)
     sprintf (buf, "-%04X", accumulator & 0x3fff);
   else
     sprintf (buf, "+%04X", accumulator & 0x3fff);
   write (STDOUT_FILENO, buf, 5);
+  mt_setDfColor();
   return 0;
 }
 
@@ -196,7 +200,6 @@ int mi_displayAccumulatorBigChars()
     int digit = ((accumulator & 0x3FFF) >> ((3 - i) * 4)) & 0xF;
     bc_printBigChar(&font[digit * 2], 2 + 8 * (i + 1) + 2 * (i + 1), 14, GREEN, 0);
   }
-
   return 0;
 }
 
@@ -208,16 +211,16 @@ mi_counter ()
   char buffer[32];
   write (STDOUT_FILENO, "\033[2K", 4);
   mt_gotoXY (1, 24);
-  write (STDOUT_FILENO, "enter i_c: ", strlen ("enter i_c: "));
+  write (STDOUT_FILENO, "Enter inctruntionCounter: ", strlen ("Enter inctruntionCounter: "));
   fgets (buffer, 32, stdin);
-  instruction_counter = atoi (buffer);
-  if (instruction_counter < 0 || instruction_counter > 99)
+  if (atoi (buffer) < 0 || atoi (buffer) > 99 || instruction_counter < 0 || instruction_counter > 99)
     {
-      instruction_counter = 0;
-      mt_clrscr ();
-      write (STDOUT_FILENO, "\033[38;5;196mError\n", 17);
+      mt_gotoXY (1, 24);
+      mi_messageOutput ((char *)"Значение incrtuctionCounter не должно превышать 99!!!", ERROR);
       return 1;
     }
+  else
+    instruction_counter = atoi (buffer);
   mi_displayInstructionCounter ();
   return 0;
 }
@@ -229,13 +232,14 @@ mi_accum ()
   mi_uiUpdate (halt);
   char buf[10];
   char *pEnd;
+  write (STDOUT_FILENO, "\033[2K", 4);
   mt_gotoXY (1, 24);
-  write (STDOUT_FILENO, "\r\E[K", 4);
-  write (STDOUT_FILENO, "accum > ", 13);
+  write (STDOUT_FILENO, "Enter accumulator: ", strlen ("Enter accumulator: "));
   int n = read (0, buf, 10);
   if (n != 6)
     {
-      mi_messageOutput ("0", RED);
+      mt_gotoXY (1, 24);
+      mi_messageOutput ((char *)"Accumulator имеет знак <+/-> и 4 бита значения", YELLOW);
       return -1;
     }
   buf[5] = '\0';
@@ -244,14 +248,16 @@ mi_accum ()
       if ((buf[i] < '0' || buf[i] > '9') && (buf[i] < 'a' || buf[i] > 'f')
           && (buf[i] < 'A' || buf[i] > 'F'))
         {
-          mi_messageOutput ("0", RED);
+          mt_gotoXY (1, 24);
+          mi_messageOutput ((char *)"Accumulator принимает значения только от 0-F", RED);
           return -1;
         }
     }
   int temp = strtol (&buf[1], &pEnd, 16);
   if (temp > 0x3fff)
     {
-      mi_messageOutput ("0", RED);
+      mt_gotoXY (1, 24);
+      mi_messageOutput ((char *)"Значение accumulator не должно превышать 14 бит (0x3FFF)", RED);
       return -1;
     }
   if (buf[0] == '+')
@@ -263,10 +269,11 @@ mi_accum ()
     }
   else
     {
-      mi_messageOutput ("0", RED);
+      mt_gotoXY (1, 24);
+      mi_messageOutput ((char *)"Accumulator должен иметь знак только + или -", RED);
       return -1;
     }
-    halt = false;
+//    halt = false;
   return 0;
 }
 
@@ -281,6 +288,8 @@ mi_uiInit ()
     {
       mt_clrscr ();
       mi_messageOutput ((char *)"Маленький размер окна!!!", ERROR);
+      mi_messageOutput ((char *)"Увеличьте размер окна!!!", YELLOW);
+      resize = false;
       return -1;
     }
   else
@@ -299,10 +308,19 @@ int mi_uiUpdate(bool halt)
 
   if (count_rows < 30 || count_columns < 30)
   {
-    mi_uiInit();
-    return -1;
+    if(!mi_uiInit() || !resize)
+      resize = true;
+  }
+  else if (count_rows > 30 && count_columns > 30 && resize)
+  {
+    mt_clrscr ();
+    mi_displayBoxes ();
+    mi_displayTexts ();
+    resize = false;
+    goto ignoreTactUpdate;
   }
   else {
+  ignoreTactUpdate:
     mi_displayTexts();
     mi_displayAccumulator();
     mi_displayInstructionCounter();
@@ -317,7 +335,6 @@ int mi_uiUpdate(bool halt)
     write(STDOUT_FILENO, "\033[2K", 4);
     write(STDOUT_FILENO, "Input/Output: ", strlen("Input/Output: "));
   }
-
   return 0;
 }
 
@@ -328,7 +345,7 @@ mi_uiSetValue ()
   char buffer[8], inv[32];
   mt_gotoXY (1, 24);
   write (STDOUT_FILENO, "\r\E[K", 4);
-  sprintf (inv, "\033[38;5;%dmInput/Output: \033[0m", YELLOW);
+  sprintf (inv, "\033[38;5;%dmInput/Output: \033[0m", CYAN);
   write (STDOUT_FILENO, inv, 32);
   fgets (buffer, 8, stdin);
   mt_gotoXY (8, 24);
