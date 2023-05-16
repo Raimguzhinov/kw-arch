@@ -61,5 +61,8 @@ dkms.conf
 # vscode
 .vscode/*
 
+# fleet
+.fleet/*
+
 # Other files
 test_files_memory/*
