@@ -1,6 +1,6 @@
 #pragma once
-#include <stdbool.h>
 #include <signal.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <sys/time.h>
 

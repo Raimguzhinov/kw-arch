@@ -30,7 +30,7 @@ main ()
         case RIGHT_KEY:
         case DOWN_KEY:
         case LEFT_KEY:
-          mi_currMemMove(key);
+          mi_currMemMove (key);
           break;
         case L_KEY:
           mi_dirMenu ();

@@ -38,13 +38,14 @@ mi_displayAccumulator ()
 {
   char buf[6];
   mt_gotoXY (70, 2);
-  if (halt) mt_setBgColor (GREEN);
+  if (halt)
+    mt_setBgColor (GREEN);
   if ((accumulator >> 14) & 0x1)
     sprintf (buf, "-%04X", accumulator & 0x3fff);
   else
     sprintf (buf, "+%04X", accumulator & 0x3fff);
   write (STDOUT_FILENO, buf, 5);
-  mt_setDfColor();
+  mt_setDfColor ();
   return 0;
 }
 
@@ -182,27 +183,32 @@ mi_displayBigChars ()
           ch = (operand)&0xF;
           break;
         }
-      bc_printBigChar (&font[ch * 2], 2 + 8 * (i + 1) + 2 * (i + 1), 14, PURPLE,
-                       0);
+      bc_printBigChar (&font[ch * 2], 2 + 8 * (i + 1) + 2 * (i + 1), 14,
+                       PURPLE, 0);
     }
 
   return 0;
 }
 
-int mi_displayAccumulatorBigChars()
+int
+mi_displayAccumulatorBigChars ()
 {
-  if ((accumulator >> 14) & 0x1) {
-    bc_printBigChar(&font[17*2], 2, 14, GREEN, 0);
-  } else {
-    bc_printBigChar(&font[16*2], 2, 14, GREEN, 0);
-  }
-  for (int i = 0; i < 4; ++i) {
-    int digit = ((accumulator & 0x3FFF) >> ((3 - i) * 4)) & 0xF;
-    bc_printBigChar(&font[digit * 2], 2 + 8 * (i + 1) + 2 * (i + 1), 14, GREEN, 0);
-  }
+  if ((accumulator >> 14) & 0x1)
+    {
+      bc_printBigChar (&font[17 * 2], 2, 14, GREEN, 0);
+    }
+  else
+    {
+      bc_printBigChar (&font[16 * 2], 2, 14, GREEN, 0);
+    }
+  for (int i = 0; i < 4; ++i)
+    {
+      int digit = ((accumulator & 0x3FFF) >> ((3 - i) * 4)) & 0xF;
+      bc_printBigChar (&font[digit * 2], 2 + 8 * (i + 1) + 2 * (i + 1), 14,
+                       GREEN, 0);
+    }
   return 0;
 }
-
 
 int
 mi_counter ()
@@ -211,12 +217,16 @@ mi_counter ()
   char buffer[32];
   write (STDOUT_FILENO, "\033[2K", 4);
   mt_gotoXY (1, 24);
-  write (STDOUT_FILENO, "Enter inctruntionCounter: ", strlen ("Enter inctruntionCounter: "));
+  write (STDOUT_FILENO,
+         "Enter inctruntionCounter: ", strlen ("Enter inctruntionCounter: "));
   fgets (buffer, 32, stdin);
-  if (atoi (buffer) < 0 || atoi (buffer) > 99 || instruction_counter < 0 || instruction_counter > 99)
+  if (atoi (buffer) < 0 || atoi (buffer) > 99 || instruction_counter < 0
+      || instruction_counter > 99)
     {
       mt_gotoXY (1, 24);
-      mi_messageOutput ((char *)"Значение incrtuctionCounter не должно превышать 99!!!", ERROR);
+      mi_messageOutput (
+          (char *)"Значение incrtuctionCounter не должно превышать 99!!!",
+          ERROR);
       return 1;
     }
   else
@@ -239,7 +249,8 @@ mi_accum ()
   if (n != 6)
     {
       mt_gotoXY (1, 24);
-      mi_messageOutput ((char *)"Accumulator имеет знак <+/-> и 4 бита значения", YELLOW);
+      mi_messageOutput (
+          (char *)"Accumulator имеет знак <+/-> и 4 бита значения", YELLOW);
       return -1;
     }
   buf[5] = '\0';
@@ -249,7 +260,8 @@ mi_accum ()
           && (buf[i] < 'A' || buf[i] > 'F'))
         {
           mt_gotoXY (1, 24);
-          mi_messageOutput ((char *)"Accumulator принимает значения только от 0-F", RED);
+          mi_messageOutput (
+              (char *)"Accumulator принимает значения только от 0-F", RED);
           return -1;
         }
     }
@@ -257,7 +269,9 @@ mi_accum ()
   if (temp > 0x3fff)
     {
       mt_gotoXY (1, 24);
-      mi_messageOutput ((char *)"Значение accumulator не должно превышать 14 бит (0x3FFF)", RED);
+      mi_messageOutput (
+          (char *)"Значение accumulator не должно превышать 14 бит (0x3FFF)",
+          RED);
       return -1;
     }
   if (buf[0] == '+')
@@ -270,10 +284,11 @@ mi_accum ()
   else
     {
       mt_gotoXY (1, 24);
-      mi_messageOutput ((char *)"Accumulator должен иметь знак только + или -", RED);
+      mi_messageOutput ((char *)"Accumulator должен иметь знак только + или -",
+                        RED);
       return -1;
     }
-//    halt = false;
+  //    halt = false;
   return 0;
 }
 
@@ -301,40 +316,43 @@ mi_uiInit ()
   return 0;
 }
 
-int mi_uiUpdate(bool halt)
+int
+mi_uiUpdate (bool halt)
 {
   int count_rows, count_columns;
-  mt_getScreenSize(&count_rows, &count_columns);
+  mt_getScreenSize (&count_rows, &count_columns);
 
   if (count_rows < 30 || count_columns < 30)
-  {
-    if(!mi_uiInit() || !resize)
-      resize = true;
-  }
-  else if (count_rows > 30 && count_columns > 30 && resize)
-  {
-    mt_clrscr ();
-    mi_displayBoxes ();
-    mi_displayTexts ();
-    resize = false;
-    goto ignoreTactUpdate;
-  }
-  else {
-  ignoreTactUpdate:
-    mi_displayTexts();
-    mi_displayAccumulator();
-    mi_displayInstructionCounter();
-    mi_displayOperation();
-    mi_displayFlags();
-    mi_displayMemoryValues();
-    mi_displayBigChars();
-    if (halt) {
-      mi_displayAccumulatorBigChars();
+    {
+      if (!mi_uiInit () || !resize)
+        resize = true;
     }
-    mt_gotoXY(1, 24);
-    write(STDOUT_FILENO, "\033[2K", 4);
-    write(STDOUT_FILENO, "Input/Output: ", strlen("Input/Output: "));
-  }
+  else if (count_rows > 30 && count_columns > 30 && resize)
+    {
+      mt_clrscr ();
+      mi_displayBoxes ();
+      mi_displayTexts ();
+      resize = false;
+      goto ignoreTactUpdate;
+    }
+  else
+    {
+    ignoreTactUpdate:
+      mi_displayTexts ();
+      mi_displayAccumulator ();
+      mi_displayInstructionCounter ();
+      mi_displayOperation ();
+      mi_displayFlags ();
+      mi_displayMemoryValues ();
+      mi_displayBigChars ();
+      if (halt)
+        {
+          mi_displayAccumulatorBigChars ();
+        }
+      mt_gotoXY (1, 24);
+      write (STDOUT_FILENO, "\033[2K", 4);
+      write (STDOUT_FILENO, "Input/Output: ", strlen ("Input/Output: "));
+    }
   return 0;
 }
 
@@ -401,7 +419,7 @@ mi_uiSetValue ()
       number = number | 0x4000;
       sc_memorySet (currMemCell, number);
     }
-    mi_hideCursor ();
+  mi_hideCursor ();
   return 0;
 }
 
@@ -477,7 +495,7 @@ mi_dirMenu ()
   int selected = 0;
   int total = 0;
   halt = false;
-  raise(SIGUSR1);
+  raise (SIGUSR1);
   if ((dir = opendir (dir_path)) != NULL)
     {
       while ((ent = readdir (dir)) != NULL)
@@ -611,8 +629,8 @@ mi_memorySave ()
 int
 mi_currMemMove (enum keys direction)
 {
-halt = false;
-mt_gotoXY (currMemCell / 10 + 2, currMemCell % 10 * 6 + 2);
+  halt = false;
+  mt_gotoXY (currMemCell / 10 + 2, currMemCell % 10 * 6 + 2);
   switch (direction)
     {
     case UP_KEY:
@@ -631,4 +649,4 @@ mt_gotoXY (currMemCell / 10 + 2, currMemCell % 10 * 6 + 2);
       return -1;
     }
   return 0;
-  }
+}
