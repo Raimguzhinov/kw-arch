@@ -199,6 +199,7 @@ CU ()
           break;
         case HALT:
           mc_halt ();
+          halt = true;
           return HALT;
           break;
         case LOGLC:
@@ -217,8 +218,9 @@ CU ()
 void
 mc_oneTactPulse ()
 {
+  halt = false;
   currMemCell = instruction_counter;
-  mi_uiUpdate ();
+  mi_uiUpdate (halt);
   sc_regSet (FLAG_T, 0);
   int cu_result = CU ();
   int value;

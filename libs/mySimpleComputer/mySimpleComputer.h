@@ -1,4 +1,5 @@
 #pragma once
+#include <stdbool.h>
 #include <signal.h>
 #include <stdio.h>
 #include <sys/time.h>
@@ -16,6 +17,7 @@
 extern int instruction_counter;
 extern int accumulator;
 extern short currMemCell;
+extern bool halt;
 
 int sc_memoryInit ();
 int sc_memorySet (int address, int value);

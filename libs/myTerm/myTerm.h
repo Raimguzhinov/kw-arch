@@ -20,9 +20,9 @@ enum colors
   RED = 196,
   ERROR,
   BLUE = 30,
-  YELLOW,
+  YELLOW = 220,
   GREEN = 34,
-  PURPLE,
+  PURPLE = 99,
   CYAN = 36,
   NONACTIVE = 0
 };
