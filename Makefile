@@ -14,15 +14,15 @@ binary: ${MYLIBS}
 
 .ONESHELL:
 sat: project/commands.h
-	clang++ -std=c++17 $(CFLAGS) -I project/commands.h -o ${BIN_DIR}/sat project/assembler/sat.cpp $(LDLIBS)
+	$(CXX) $(CFLAGS) -I project/commands.h -o ${BIN_DIR}/sat project/assembler/sat.cpp $(LDLIBS)
 	./${BIN_DIR}/sat project/assembler/subtraction.sa resources/assembly_to_machine.o;
 	${MAKE} all run
 
 .ONESHELL:
 sbt: project/commands.h
-	clang++ -std=c++17 project/basic/sbt.cpp -o ${BIN_DIR}/sbt
+	$(CXX) project/basic/sbt.cpp -o ${BIN_DIR}/sbt
 	./${BIN_DIR}/sbt project/basic/factorial.sb project/assembler/factorial.sa;
-	clang++ -std=c++17 $(CFLAGS) -I project/commands.h -o ${BIN_DIR}/sbat project/assembler/sat.cpp $(LDLIBS)
+	$(CXX) $(CFLAGS) -I project/commands.h -o ${BIN_DIR}/sbat project/assembler/sat.cpp $(LDLIBS)
 	./${BIN_DIR}/sbat project/assembler/factorial.sa resources/basic_to_assembly.o;
 	${MAKE} all run
 
