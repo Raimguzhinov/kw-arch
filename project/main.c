@@ -5,11 +5,11 @@
 #include <myTerm.h>
 
 bool on = true;
-bool sc_halt = false;
 
 int
 main ()
 {
+  sc_halt = false;
   enum keys key;
   struct itimerval nval, oval;
   rk_myTermSave ();

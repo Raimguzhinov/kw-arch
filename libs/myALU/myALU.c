@@ -8,7 +8,7 @@ ALU (int command, int operand)
   sc_memoryGet (operand, &tmp);
   switch (command)
     {
-    case 0x30: // сложение, результат в акк
+    case ADD: // сложение, результат в акк
       if (sc_memoryGet (operand, &num))
         return -1;
       if (accumulator >> 14 == num >> 14)
@@ -38,7 +38,7 @@ ALU (int command, int operand)
         }
       accumulator = res & 0x7fff;
       break;
-    case 0x31: // вычитание
+    case SUB: // вычитание
       if (sc_memoryGet (operand, &num))
         return -1;
       if (accumulator >> 14 == num >> 14)
@@ -68,7 +68,7 @@ ALU (int command, int operand)
         }
       accumulator = res & 0x7fff;
       break;
-    case 0x32: // деление
+    case DIVIDE: // деление
       if (sc_memoryGet (operand, &num))
         return -1;
       if ((num & 0x3fff) == 0)
@@ -81,7 +81,7 @@ ALU (int command, int operand)
         res |= 0x4000;
       accumulator = res & 0x7fff;
       break;
-    case 0x33: // произведение
+    case MUL: // произведение
       if (sc_memoryGet (operand, &num))
         return -1;
       res = (num & 0x3fff) * (accumulator & 0x3fff);

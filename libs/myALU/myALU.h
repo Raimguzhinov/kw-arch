@@ -1,4 +1,5 @@
 #pragma once
+#include "../../project/commands.h"
 #include <myInterface.h>
 #include <mySimpleComputer.h>
 

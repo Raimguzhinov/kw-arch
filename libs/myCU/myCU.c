@@ -7,10 +7,12 @@ mc_read (int operand)
   mi_showCursor ();
   char buf[10];
   bool corrent_input = true;
+  mt_gotoXY (1, 24);
+  write (STDOUT_FILENO, "\033[2K", 4);
+  write (STDOUT_FILENO, "Input/Output: ", strlen ("Input/Output: "));
   mt_gotoXY (1, 25);
-  write (1, "\r\E[K", 4);
   int n = sprintf (buf, "%X< ", operand);
-  write (1, buf, n);
+  write (STDOUT_FILENO, buf, n);
   n = read (0, buf, 10);
   buf[n - 1] = '\0';
   for (int i = 1; i < n - 1; ++i)
