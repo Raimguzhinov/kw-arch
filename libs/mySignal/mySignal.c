@@ -40,7 +40,7 @@ ms_timerHandler (int sig)
   mi_uiUpdate (sc_halt);
   if (!value)
     {
-      ualarm (100000, 0);
+      ualarm (100, 0);
     }
   if (cu_result == -2)
     raise (SIGUSR1);
