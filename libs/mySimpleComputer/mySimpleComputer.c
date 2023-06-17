@@ -2,6 +2,7 @@
 
 int memory[RAM_SIZE]; // Модель оперативной памяти
 int sc_regFlags;      // Регистр флагов
+bool sc_halt;
 int instruction_counter;
 int accumulator;
 short currMemCell;
@@ -71,6 +72,7 @@ sc_memoryLoad (char *filename)
 int
 sc_regInit (void)
 {
+  sc_halt = false;
   sc_regFlags = 0;
   return 0;
 }
@@ -133,6 +135,7 @@ sc_commandDecode (int value, int *command, int *operand)
 void
 sc_restart ()
 {
+  sc_halt = false;
   raise (SIGUSR1);
   accumulator = 0;
   instruction_counter = 0;

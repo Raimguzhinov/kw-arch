@@ -1,4 +1,10 @@
 #include "myInterface.h"
+#include "myReadKey.h"
+#include "mySimpleComputer.h"
+#include "myTerm.h"
+#include <signal.h>
+
+bool resize = false;
 
 int
 mi_displayMemoryValues ()
@@ -10,8 +16,8 @@ mi_displayMemoryValues ()
           mt_gotoXY (2 + (5 * j + j), 2 + i);
           int value;
           sc_memoryGet (i * 10 + j, &value);
-          if ((i * 10 + j) == currMemCell)
-            mt_setBgColor (GREEN);
+          if ((i * 10 + j) == currMemCell && !sc_halt)
+            mt_setBgColor (PURPLE);
           else
             mt_setDfColor ();
           int command, operand;
@@ -32,11 +38,14 @@ mi_displayAccumulator ()
 {
   char buf[6];
   mt_gotoXY (70, 2);
+  if (sc_halt)
+    mt_setBgColor (GREEN);
   if ((accumulator >> 14) & 0x1)
     sprintf (buf, "-%04X", accumulator & 0x3fff);
   else
     sprintf (buf, "+%04X", accumulator & 0x3fff);
   write (STDOUT_FILENO, buf, 5);
+  mt_setDfColor ();
   return 0;
 }
 
@@ -148,12 +157,12 @@ mi_displayBigChars ()
   if (!(value >> 14))
     {
       ind = 16;
-      bc_printBigChar (&font[ind * 2], 2, 14, GREEN, 0);
+      bc_printBigChar (&font[ind * 2], 2, 14, PURPLE, 0);
     }
   else
     {
       ind = 17;
-      bc_printBigChar (&font[ind * 2], 2, 14, GREEN, 0);
+      bc_printBigChar (&font[ind * 2], 2, 14, PURPLE, 0);
     }
   sc_commandDecode (value & 0x3FFF, &command, &operand);
   int ch;
@@ -174,29 +183,54 @@ mi_displayBigChars ()
           ch = (operand)&0xF;
           break;
         }
-      bc_printBigChar (&font[ch * 2], 2 + 8 * (i + 1) + 2 * (i + 1), 14, GREEN,
-                       0);
+      bc_printBigChar (&font[ch * 2], 2 + 8 * (i + 1) + 2 * (i + 1), 14,
+                       PURPLE, 0);
     }
 
   return 0;
 }
 
 int
+mi_displayAccumulatorBigChars ()
+{
+  if ((accumulator >> 14) & 0x1)
+    {
+      bc_printBigChar (&font[17 * 2], 2, 14, GREEN, 0);
+    }
+  else
+    {
+      bc_printBigChar (&font[16 * 2], 2, 14, GREEN, 0);
+    }
+  for (int i = 0; i < 4; ++i)
+    {
+      int digit = ((accumulator & 0x3FFF) >> ((3 - i) * 4)) & 0xF;
+      bc_printBigChar (&font[digit * 2], 2 + 8 * (i + 1) + 2 * (i + 1), 14,
+                       GREEN, 0);
+    }
+  return 0;
+}
+
+int
 mi_counter ()
 {
+  sc_halt = false;
   char buffer[32];
-  write (1, "\033[2K", 4);
+  write (STDOUT_FILENO, "\033[2K", 4);
   mt_gotoXY (1, 24);
-  write (STDOUT_FILENO, "enter i_c: ", strlen ("enter i_c: "));
+  write (STDOUT_FILENO,
+         "Enter inctruntionCounter: ", strlen ("Enter inctruntionCounter: "));
   fgets (buffer, 32, stdin);
-  instruction_counter = atoi (buffer);
-  if (instruction_counter < 0 || instruction_counter > 99)
+  if (atoi (buffer) < 0 || atoi (buffer) > 99 || instruction_counter < 0
+      || instruction_counter > 99)
     {
-      instruction_counter = 0;
-      mt_clrscr ();
-      write (STDOUT_FILENO, "\033[38;5;196mError\n", 17);
+      mt_gotoXY (1, 24);
+      mi_messageOutput (
+          (char *)"Значение incrtuctionCounter не должно превышать 99!!!",
+          ERROR);
       return 1;
     }
+  else
+    instruction_counter = atoi (buffer);
   mi_displayInstructionCounter ();
   return 0;
 }
@@ -204,15 +238,19 @@ mi_counter ()
 int
 mi_accum ()
 {
+  sc_halt = true;
+  mi_uiUpdate (sc_halt);
   char buf[10];
   char *pEnd;
+  write (STDOUT_FILENO, "\033[2K", 4);
   mt_gotoXY (1, 24);
-  write (1, "\r\E[K", 4);
-  write (1, "accum > ", 13);
+  write (STDOUT_FILENO, "Enter accumulator: ", strlen ("Enter accumulator: "));
   int n = read (0, buf, 10);
   if (n != 6)
     {
-      mi_messageOutput ("0", RED);
+      mt_gotoXY (1, 24);
+      mi_messageOutput (
+          (char *)"Accumulator имеет знак <+/-> и 4 бита значения", YELLOW);
       return -1;
     }
   buf[5] = '\0';
@@ -221,14 +259,19 @@ mi_accum ()
       if ((buf[i] < '0' || buf[i] > '9') && (buf[i] < 'a' || buf[i] > 'f')
           && (buf[i] < 'A' || buf[i] > 'F'))
         {
-          mi_messageOutput ("0", RED);
+          mt_gotoXY (1, 24);
+          mi_messageOutput (
+              (char *)"Accumulator принимает значения только от 0-F", RED);
           return -1;
         }
     }
   int temp = strtol (&buf[1], &pEnd, 16);
   if (temp > 0x3fff)
     {
-      mi_messageOutput ("0", RED);
+      mt_gotoXY (1, 24);
+      mi_messageOutput (
+          (char *)"Значение accumulator не должно превышать 14 бит (0x3FFF)",
+          RED);
       return -1;
     }
   if (buf[0] == '+')
@@ -240,9 +283,12 @@ mi_accum ()
     }
   else
     {
-      mi_messageOutput ("0", RED);
+      mt_gotoXY (1, 24);
+      mi_messageOutput ((char *)"Accumulator должен иметь знак только + или -",
+                        RED);
       return -1;
     }
+  //    halt = false;
   return 0;
 }
 
@@ -256,7 +302,9 @@ mi_uiInit ()
   if (count_rows < 30 || count_columns < 30)
     {
       mt_clrscr ();
-      printf ("\nмаленький размер окна!!!");
+      mi_messageOutput ((char *)"Маленький размер окна!!!", ERROR);
+      mi_messageOutput ((char *)"Увеличьте размер окна!!!", YELLOW);
+      resize = false;
       return -1;
     }
   else
@@ -269,17 +317,27 @@ mi_uiInit ()
 }
 
 int
-mi_uiUpdate ()
+mi_uiUpdate (bool halt)
 {
   int count_rows, count_columns;
   mt_getScreenSize (&count_rows, &count_columns);
+
   if (count_rows < 30 || count_columns < 30)
     {
-      mi_uiInit ();
-      return -1;
+      if (!mi_uiInit () || !resize)
+        resize = true;
+    }
+  else if (count_rows > 30 && count_columns > 30 && resize)
+    {
+      mt_clrscr ();
+      mi_displayBoxes ();
+      mi_displayTexts ();
+      resize = false;
+      goto ignoreTactUpdate;
     }
   else
     {
+    ignoreTactUpdate:
       mi_displayTexts ();
       mi_displayAccumulator ();
       mi_displayInstructionCounter ();
@@ -287,8 +345,12 @@ mi_uiUpdate ()
       mi_displayFlags ();
       mi_displayMemoryValues ();
       mi_displayBigChars ();
+      if (halt)
+        {
+          mi_displayAccumulatorBigChars ();
+        }
       mt_gotoXY (1, 24);
-      write (1, "\033[2K", 4);
+      write (STDOUT_FILENO, "\033[2K", 4);
       write (STDOUT_FILENO, "Input/Output: ", strlen ("Input/Output: "));
     }
   return 0;
@@ -297,11 +359,15 @@ mi_uiUpdate ()
 int
 mi_uiSetValue ()
 {
-
-  char buffer[10];
-  fgets (buffer, 10, stdin);
+  mi_showCursor ();
+  char buffer[8], inv[32];
+  mt_gotoXY (1, 24);
+  write (STDOUT_FILENO, "\r\E[K", 4);
+  sprintf (inv, "\033[38;5;%dmInput/Output: \033[0m", CYAN);
+  write (STDOUT_FILENO, inv, 32);
+  fgets (buffer, 8, stdin);
   mt_gotoXY (8, 24);
-  write (1, "\033[2K", 4);
+  write (STDOUT_FILENO, "\033[2K", 4);
 
   if (buffer[strlen (buffer) - 1] != '\n')
     mi_clearBuffIn ();
@@ -309,7 +375,7 @@ mi_uiSetValue ()
   if (!mi_checkCorrectInput (buffer))
     {
       mt_gotoXY (1, 24);
-      mi_messageOutput ((char *)"Invalid input", ERROR);
+      mi_messageOutput ((char *)"Недопустимый ввод", ERROR);
       return -1;
     }
 
@@ -322,7 +388,7 @@ mi_uiSetValue ()
       if (number > 0x3FFF)
         {
           mi_messageOutput (
-              (char *)"The command value must not exceed 14 bits (0x3FFF)",
+              (char *)"Значение команды не должно превышать 14 бит (0x3FFF)",
               RED);
           return -1;
         }
@@ -334,7 +400,7 @@ mi_uiSetValue ()
       if (number > 0x3FFF)
         {
           mi_messageOutput (
-              (char *)"The command value must not exceed 14 bits (0x3FFF)",
+              (char *)"Значение команды не должно превышать 14 бит (0x3FFF)",
               RED);
           return -1;
         }
@@ -346,14 +412,14 @@ mi_uiSetValue ()
       if (number > 0x3FFF)
         {
           mi_messageOutput (
-              (char *)"The command value must not exceed 14 bits (0x3FFF)",
+              (char *)"Значение команды не должно превышать 14 бит (0x3FFF)",
               RED);
           return -1;
         }
       number = number | 0x4000;
       sc_memorySet (currMemCell, number);
     }
-
+  mi_hideCursor ();
   return 0;
 }
 
@@ -388,7 +454,7 @@ mi_messageOutput (char *str, enum colors color)
   sprintf (buff, "\033[38;5;%dm%s\033[0m", color, str);
   write (STDOUT_FILENO, buff, 100);
   color == ERROR ? sleep (1) : sleep (2);
-  write (1, "\033[2K", 4);
+  write (STDOUT_FILENO, "\033[2K", 4);
   return 0;
 }
 
@@ -407,14 +473,15 @@ mi_clearBuffIn ()
 int
 mi_hideCursor ()
 {
-  write (1, "\E[?25l\E[?1c", 8);
+  write (STDOUT_FILENO, "\E[?25l\E[?1c", 11);
   return 0;
 }
 
 int
 mi_showCursor ()
 {
-  write (1, "\E[?25h\E?8c", 8);
+  sc_halt = false;
+  write (STDOUT_FILENO, "\E[?25h\E?8c", 11);
   return 0;
 }
 
@@ -427,6 +494,8 @@ mi_dirMenu ()
   char dir_path[] = "resources/";
   int selected = 0;
   int total = 0;
+  sc_halt = false;
+  raise (SIGUSR1);
   if ((dir = opendir (dir_path)) != NULL)
     {
       while ((ent = readdir (dir)) != NULL)
@@ -437,7 +506,11 @@ mi_dirMenu ()
           stat (path, &st);
           if (S_ISREG (st.st_mode))
             {
-              total++;
+              // Проверяем, что имя файла не начинается с символа точки
+              if (ent->d_name[0] != '.')
+                {
+                  total++;
+                }
             }
         }
       while (1)
@@ -455,15 +528,19 @@ mi_dirMenu ()
               stat (path, &st);
               if (S_ISREG (st.st_mode))
                 {
-                  if (count == selected)
+                  // Проверяем, что имя файла не начинается с символа точки
+                  if (ent->d_name[0] != '.')
                     {
-                      printf ("> \033[7m%s\033[0m\n", ent->d_name);
+                      if (count == selected)
+                        {
+                          printf ("> \033[7m%s\033[0m\n", ent->d_name);
+                        }
+                      else
+                        {
+                          printf ("> %s\n", ent->d_name);
+                        }
+                      count++;
                     }
-                  else
-                    {
-                      printf ("> %s\n", ent->d_name);
-                    }
-                  count++;
                 }
             }
           enum keys key;
@@ -472,7 +549,7 @@ mi_dirMenu ()
             { // ESC
               mt_clrscr ();
               mi_uiInit ();
-              mi_uiUpdate ();
+              mi_uiUpdate (sc_halt);
               break;
             }
           else if (key == ENTER_KEY)
@@ -487,17 +564,21 @@ mi_dirMenu ()
                   stat (path, &st);
                   if (S_ISREG (st.st_mode))
                     {
-                      if (count == selected)
+                      // Проверяем, что имя файла не начинается с символа точки
+                      if (ent->d_name[0] != '.')
                         {
-                          mt_clrscr ();
-                          mi_uiInit ();
-                          sc_restart ();
-                          mi_displayInstructionCounter ();
-                          mi_uiUpdate ();
-                          sc_memoryLoad (path);
-                          return;
+                          if (count == selected)
+                            {
+                              mt_clrscr ();
+                              mi_uiInit ();
+                              sc_restart ();
+                              mi_displayInstructionCounter ();
+                              mi_uiUpdate (sc_halt);
+                              sc_memoryLoad (path);
+                              return;
+                            }
+                          count++;
                         }
-                      count++;
                     }
                 }
             }
@@ -529,20 +610,21 @@ mi_dirMenu ()
 int
 mi_memorySave ()
 {
+  sc_halt = false;
   char buf[100];
   memset (buf, 0, sizeof (buf));
   mt_gotoXY (1, 24);
-  write (1, "\r\E[K", 4);
-  write (1, "Filename> ", 11);
+  write (STDOUT_FILENO, "\r\E[K", 4);
+  write (STDOUT_FILENO, "Filename> ", 11);
   int n = read (0, buf, 100);
   buf[n - 1] = '\0';
   if (buf[0] == '\E' && buf[1] == '\0')
     {
       mt_gotoXY (1, 24);
-      write (1, "\r\E[K", 4);
+      write (STDOUT_FILENO, "\r\E[K", 4);
       return 1;
     }
-  char path[100 + 11]; // 11 - length of "resources/"
+  char path[100 + 11];
   memset (path, 0, sizeof (path));
   strcat (path, "resources/");
   strcat (path, buf);
@@ -553,5 +635,30 @@ mi_memorySave ()
       return 1;
     }
   mi_messageOutput ("Файл успешно сохранен", GREEN);
+  return 0;
+}
+
+int
+mi_currMemMove (enum keys direction)
+{
+  sc_halt = false;
+  mt_gotoXY (currMemCell / 10 + 2, currMemCell % 10 * 6 + 2);
+  switch (direction)
+    {
+    case UP_KEY:
+      currMemCell += currMemCell < 10 ? 90 : -10;
+      break;
+    case DOWN_KEY:
+      currMemCell += currMemCell >= 90 ? -90 : 10;
+      break;
+    case LEFT_KEY:
+      currMemCell += currMemCell % 10 == 0 ? 9 : -1;
+      break;
+    case RIGHT_KEY:
+      currMemCell += currMemCell % 10 == 9 ? -9 : 1;
+      break;
+    default:
+      return -1;
+    }
   return 0;
 }

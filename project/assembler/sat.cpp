@@ -56,14 +56,17 @@ int readFile(const std::string &filename, int *memory) {
                                     std::to_string(lineNumber));
       }
       piece = strtok(NULL, " "); // Получаем операнд
+      if (piece == NULL) {
+        throw std::invalid_argument("Неверный формат в строке: " +
+                                    std::to_string(lineNumber));
+      }
       if (*(piece + strlen(piece) - 1) ==
           '\n') // удаляем символ переноса строки
         piece[strlen(piece) - 1] = '\0';
       else {
         char *temp = strtok(NULL, " ");
-        if (!(*temp == '\n' ||
-              *temp ==
-                  ';')) { // проверка на символ конца строки или комментарий
+        if (temp != NULL &&
+            *temp != ';') { // проверка на символ конца строки или комментарий
           throw std::invalid_argument("Неверный формат в строке: " +
                                       std::to_string(lineNumber));
         }
@@ -124,7 +127,7 @@ int readFile(const std::string &filename, int *memory) {
       lineNumber++;
     }
   } catch (const std::exception &e) {
-    std::cerr << "Error reading file " << filename << ": " << e.what()
+    std::cerr << "Ошибка чтения файла " << filename << ": " << e.what()
               << std::endl;
     return -1;
   }
@@ -164,8 +167,10 @@ int main(int argc, char *argv[]) {
     return -1;
   out.write(reinterpret_cast<char *>(memory),
             sizeof(memory)); // записываем массив в файл
+  std::cout << "Трансляция в машинный код завершена!" << std::endl;
   out.close();
-  std::cout << "Нажмите любую клавишу для запуска интерфейса" << std::endl;
+  std::cout << "Нажмите Enter для запуска интерфейса";
   std::cin.get();
+  std::cout << std::endl;
   return 0;
 }

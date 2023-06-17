@@ -6,38 +6,16 @@ mc_read (int operand)
   rk_myTermRestore ();
   mi_showCursor ();
   char buf[10];
-  bool corrent_input = true;
+  mt_gotoXY (1, 24);
+  write (STDOUT_FILENO, "\033[2K", 4);
+  write (STDOUT_FILENO, "Input/Output: ", strlen ("Input/Output: "));
   mt_gotoXY (1, 25);
-  write (1, "\r\E[K", 4);
+  write (STDOUT_FILENO, "\033[2K", 4);
   int n = sprintf (buf, "%X< ", operand);
-  write (1, buf, n);
-  n = read (0, buf, 10);
-  buf[n - 1] = '\0';
-  for (int i = 1; i < n - 1; ++i)
-    {
-      if ((buf[i] < '0' || buf[i] > '9') && (buf[i] < 'a' || buf[i] > 'f')
-          && (buf[i] < 'A' || buf[i] > 'F'))
-        {
-          return -1;
-        }
-    }
-  int number = 0;
-  char *pEnd;
-  if (buf[0] == '+' || buf[0] == '-')
-    {
-      number = strtol (&buf[1], &pEnd, 16);
-      if (number > 0x3fff)
-        corrent_input = false;
-      if (buf[0] == '-')
-        number |= (0x1 << 14);
-      if (sc_memorySet (operand, number & 0x7fff))
-        return -1;
-      // printMemoryOne (operand);
-      if (!corrent_input)
-        return -1;
-    }
-  else
-    return -1;
+  write (STDOUT_FILENO, buf, n);
+  char buffAf[32];
+  fgets (buffAf, 32, stdin);
+  sc_memorySet (operand, atoi (buffAf));
   rk_myTermRegime (0, 30, 0, 0, 0);
   return 0;
 }
@@ -45,17 +23,19 @@ mc_read (int operand)
 int
 mc_write (int operand)
 {
-  char buf[6];
   int value;
+  int command;
+  char buf[20];
+  if (sc_memoryGet (operand, &value)
+      || sc_commandDecode (value & 0x3FFF, &command, &operand))
+    {
+      sc_regSet (4, 1);
+      return -1;
+    }
+  snprintf (buf, 20, "Output:> %c%02X%02X", (value & 0x4000) ? '-' : '+',
+            command, operand);
   mt_gotoXY (1, 26);
-  write (1, "\r\E[K", 4);
-  int n = sprintf (buf, "%X> ", operand);
-  write (1, buf, n);
-  if (sc_memoryGet (operand, &value))
-    return -1;
-  n = value >> 14 ? sprintf (buf, "-%04X", value & 0x3FFF)
-                  : sprintf (buf, "+%04X", value & 0x3FFF);
-  write (1, buf, n);
+  write (1, buf, 15);
   return 0;
 }
 
@@ -63,8 +43,7 @@ int
 mc_load (int operand)
 {
   int value = 0;
-  if (sc_memoryGet (operand, &value))
-    return -1;
+  sc_memoryGet (operand, &value);
   accumulator = value;
   return 0;
 }
@@ -72,19 +51,13 @@ mc_load (int operand)
 int
 mc_store (int operand)
 {
-  if (sc_memorySet (operand, accumulator))
-    return -1;
+  sc_memorySet (operand, accumulator);
   return 0;
 }
 
 int
 mc_jump (int operand)
 {
-  if (operand > 99)
-    {
-      sc_regSet (FLAG_M, 1);
-      return -1;
-    }
   instruction_counter = operand;
   CU ();
   return 0;
@@ -93,36 +66,22 @@ mc_jump (int operand)
 int
 mc_jneg (int operand)
 {
-  if ((accumulator >> 14) == 0 || (accumulator & 0x3fff) == 0)
+  if (accumulator < 0)
     {
-      instruction_counter++;
-      return 0;
+      instruction_counter = operand;
+      CU ();
     }
-  if (operand > 99)
-    {
-      sc_regSet (FLAG_M, 1);
-      return -1;
-    }
-  instruction_counter = operand;
-  CU ();
   return 0;
 }
 
 int
 mc_jz (int operand)
 {
-  if (accumulator & 0x3fff)
+  if (accumulator == 0)
     {
-      instruction_counter++;
-      return 0;
+      instruction_counter = operand;
+      CU ();
     }
-  if (operand > 99)
-    {
-      sc_regSet (FLAG_M, 1);
-      return -1;
-    }
-  instruction_counter = operand;
-  CU ();
   return 0;
 }
 
@@ -199,6 +158,7 @@ CU ()
           break;
         case HALT:
           mc_halt ();
+          sc_halt = true;
           return HALT;
           break;
         case LOGLC:
@@ -217,8 +177,9 @@ CU ()
 void
 mc_oneTactPulse ()
 {
+  sc_halt = false;
   currMemCell = instruction_counter;
-  mi_uiUpdate ();
+  mi_uiUpdate (sc_halt);
   sc_regSet (FLAG_T, 0);
   int cu_result = CU ();
   int value;

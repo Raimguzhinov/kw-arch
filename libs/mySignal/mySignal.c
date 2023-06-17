@@ -7,6 +7,7 @@ ms_setTimer (struct itimerval *nval, struct itimerval *oval)
   nval->it_interval.tv_usec = 0;
   nval->it_value.tv_sec = 1;
   nval->it_value.tv_usec = 0;
+  ms_setSignals ();
 }
 
 void
@@ -36,10 +37,10 @@ ms_timerHandler (int sig)
         }
     }
   currMemCell = instruction_counter;
-  mi_uiUpdate ();
+  mi_uiUpdate (sc_halt);
   if (!value)
     {
-      ualarm (100000, 0);
+      ualarm (100, 0);
     }
   if (cu_result == -2)
     raise (SIGUSR1);

@@ -1,5 +1,6 @@
 #pragma once
 #include <signal.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <sys/time.h>
 
@@ -13,6 +14,7 @@
 #define FLAG_T 4 // Флаг игнорирования тактовых импульсов
 #define FLAG_E 5 // Флаг неверной команды
 
+extern bool sc_halt;
 extern int instruction_counter;
 extern int accumulator;
 extern short currMemCell;
