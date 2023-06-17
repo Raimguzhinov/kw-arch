@@ -23,19 +23,16 @@ sa: project/commands.h
 	${MAKE} sat --ignore-errors --keep-going
 
 sat: ${MYSATP}
-	${info >sat > ${MYSATP}}
+	${info > SimpleAssembler_to_Machine > ${MYSATP}}
 	${info >>> transfer is completed}
-	${MAKE} all run
 
 sb: project/commands.h
 	$(CXX) -std=c++20 project/basic/sbt.cpp -o ${BIN_DIR}/sbt
 	${MAKE} sbt --ignore-errors --keep-going
-	${MAKE} sa
 
 sbt: ${MYSBTP}
-	${info >svt > ${MYSBTP}}
+	${info > SimpleBasic_to_SimpleAssembler > ${MYSBTP}}
 	${info >>> transfer is completed}
-	${MAKE} all run
 # ------------------- >
 
 test: ${MYLIBS}
