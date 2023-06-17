@@ -5,6 +5,11 @@ MYLIBS = mySimpleComputer myTerm myBigChars myInterface myReadKey myALU myCU myS
 CFLAGS = -Wall ${addprefix -I libs/,${LIBS_DIRS}}
 LDLIBS = ${addprefix -L libs/,${LIBS_DIRS}} ${addprefix -l,${LIBS_DIRS}}
 
+# ------------------- <
+MYSATP = ${patsubst ./project/assembler/%,%,${wildcard ./project/assembler/*.sa} }
+MYSBTP = ${patsubst ./project/basic/%,%,${wildcard ./project/basic/*.sb} }
+# ------------------- >
+
 .PHONY: all build_dirs run format
 
 all: build_dirs binary
@@ -12,25 +17,40 @@ all: build_dirs binary
 binary: ${MYLIBS}
 	${CC} $(CFLAGS) -o ${BIN_DIR}/binary project/main.c $(LDLIBS)
 
-.ONESHELL:
-sat: project/commands.h
+# ------------------- <
+sa: project/commands.h
 	$(CXX) $(CFLAGS) -I project/commands.h -o ${BIN_DIR}/sat project/assembler/sat.cpp $(LDLIBS)
-	./${BIN_DIR}/sat project/assembler/factorial.sa resources/factorial_to_machine.o;
+	${MAKE} sat --ignore-errors --keep-going
+
+sat: ${MYSATP}
+	${info >sat > ${MYSATP}}
+	${info >>> transfer is completed}
 	${MAKE} all run
 
-.ONESHELL:
-sbt: project/commands.h
+sb: project/commands.h
 	$(CXX) -std=c++20 project/basic/sbt.cpp -o ${BIN_DIR}/sbt
-	./${BIN_DIR}/sbt project/basic/factorial.sb project/assembler/factorial.sa;
-	$(CXX) -std=c++20 $(CFLAGS) -I project/commands.h -o ${BIN_DIR}/sbat project/assembler/sat.cpp $(LDLIBS)
-	./${BIN_DIR}/sbat project/assembler/factorial.sa resources/basic_to_assembly.o;
+	${MAKE} sbt --ignore-errors --keep-going
+	${MAKE} sa
+
+sbt: ${MYSBTP}
+	${info >svt > ${MYSBTP}}
+	${info >>> transfer is completed}
 	${MAKE} all run
+# ------------------- >
 
 test: ${MYLIBS}
 	${CC} $(CFLAGS) -o ${BIN_DIR}/testbch tests/bch.c $(LDLIBS)
 	${CC} $(CFLAGS) -o ${BIN_DIR}/testif tests/iface.c $(LDLIBS)
 	${CC} $(CFLAGS) -o ${BIN_DIR}/testrk tests/rk.c $(LDLIBS)
 	./${BIN_DIR}/testrk;
+
+# ------------------- <
+${MYSATP}:
+	./${BIN_DIR}/sat project/assembler/${notdir $@} resources/${notdir ${patsubst %.sa,%.o,$@}}
+
+${MYSBTP}:
+	./${BIN_DIR}/sbt project/basic/${notdir $@} project/assembler/${notdir ${patsubst %.sb,%.sa,$@}}
+# ------------------- >
 
 ${MYLIBS}:
 	${MAKE} -C libs/${notdir $@}

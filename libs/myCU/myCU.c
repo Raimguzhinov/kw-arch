@@ -10,6 +10,7 @@ mc_read (int operand)
   write (STDOUT_FILENO, "\033[2K", 4);
   write (STDOUT_FILENO, "Input/Output: ", strlen ("Input/Output: "));
   mt_gotoXY (1, 25);
+  write (STDOUT_FILENO, "\033[2K", 4);
   int n = sprintf (buf, "%X< ", operand);
   write (STDOUT_FILENO, buf, n);
   char buffAf[32];

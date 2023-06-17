@@ -506,7 +506,11 @@ mi_dirMenu ()
           stat (path, &st);
           if (S_ISREG (st.st_mode))
             {
-              total++;
+              // Проверяем, что имя файла не начинается с символа точки
+              if (ent->d_name[0] != '.')
+                {
+                  total++;
+                }
             }
         }
       while (1)
@@ -524,15 +528,19 @@ mi_dirMenu ()
               stat (path, &st);
               if (S_ISREG (st.st_mode))
                 {
-                  if (count == selected)
+                  // Проверяем, что имя файла не начинается с символа точки
+                  if (ent->d_name[0] != '.')
                     {
-                      printf ("> \033[7m%s\033[0m\n", ent->d_name);
+                      if (count == selected)
+                        {
+                          printf ("> \033[7m%s\033[0m\n", ent->d_name);
+                        }
+                      else
+                        {
+                          printf ("> %s\n", ent->d_name);
+                        }
+                      count++;
                     }
-                  else
-                    {
-                      printf ("> %s\n", ent->d_name);
-                    }
-                  count++;
                 }
             }
           enum keys key;
@@ -556,17 +564,21 @@ mi_dirMenu ()
                   stat (path, &st);
                   if (S_ISREG (st.st_mode))
                     {
-                      if (count == selected)
+                      // Проверяем, что имя файла не начинается с символа точки
+                      if (ent->d_name[0] != '.')
                         {
-                          mt_clrscr ();
-                          mi_uiInit ();
-                          sc_restart ();
-                          mi_displayInstructionCounter ();
-                          mi_uiUpdate (sc_halt);
-                          sc_memoryLoad (path);
-                          return;
+                          if (count == selected)
+                            {
+                              mt_clrscr ();
+                              mi_uiInit ();
+                              sc_restart ();
+                              mi_displayInstructionCounter ();
+                              mi_uiUpdate (sc_halt);
+                              sc_memoryLoad (path);
+                              return;
+                            }
+                          count++;
                         }
-                      count++;
                     }
                 }
             }
