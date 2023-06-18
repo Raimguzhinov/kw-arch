@@ -35,7 +35,7 @@ int
 bc_box (int x, int y, int width, int height)
 {
   int rows, cols;
-  mt_getscreensize (&rows, &cols);
+  mt_getScreenSize (&rows, &cols);
   if ((x <= 0) || (y <= 0) || (x + width - 1 > cols) || (y + height - 1 > rows)
       || (width <= 1) || (height <= 1))
     return -1;
@@ -67,21 +67,21 @@ bc_box (int x, int y, int width, int height)
 }
 
 int
-bc_printbigchar (int *big, int x, int y, enum colors colorFG,
+bc_printBigChar (int *big, int x, int y, enum colors colorFG,
                  enum colors colorBG)
 {
   char buf[6];
   if (colorFG != DEFAULT)
-    mt_setfgcolor (colorFG);
+    mt_setFgColor (colorFG);
   if (colorBG != DEFAULT)
-    mt_setbgcolor (colorBG);
+    mt_setBgColor (colorBG);
 
   for (int i = 0; i < 8; ++i)
     for (int j = 0; j < 8; ++j)
       {
         mt_gotoXY (x + i, y + j);
         int value;
-        if (bc_getbigcharpos (big, i, j, &value))
+        if (bc_getBigCharPos (big, i, j, &value))
           return -1;
         if (value)
           bc_printA (ACS_CKBOARD);
@@ -92,12 +92,12 @@ bc_printbigchar (int *big, int x, int y, enum colors colorFG,
         write (1, buf, strlen (buf));
       }
 
-  mt_setdfcolor ();
+  mt_setDfColor ();
   return 0;
 }
 
 int
-bc_setbigcharpos (int *big, int x, int y, int value)
+bc_setBigCharPos (int *big, int x, int y, int value)
 {
   if ((x < 0) || (x > 7) || (y < 0) || (y > 7))
     return -1;
@@ -109,7 +109,7 @@ bc_setbigcharpos (int *big, int x, int y, int value)
 }
 
 int
-bc_getbigcharpos (int *big, int x, int y, int *value)
+bc_getBigCharPos (int *big, int x, int y, int *value)
 {
   if ((x < 0) || (x > 7) || (y < 0) || (y > 7))
     return -1;
@@ -121,7 +121,7 @@ bc_getbigcharpos (int *big, int x, int y, int *value)
 }
 
 int
-bc_bigcharwrite (int fd, int *big, int count)
+bc_bigCharWrite (int fd, int *big, int count)
 {
   if (big == NULL || count <= 0)
     {
@@ -136,7 +136,7 @@ bc_bigcharwrite (int fd, int *big, int count)
 }
 
 int
-bc_bigcharread (int fd, int *big, int need_count, int *count)
+bc_bigCharRead (int fd, int *big, int need_count, int *count)
 {
   if (big == NULL || need_count <= 0)
     {
@@ -155,7 +155,7 @@ bc_bigcharread (int fd, int *big, int need_count, int *count)
 }
 
 void
-bc_initfont (char *filename)
+bc_fontInit (char *filename)
 {
   int fd = open (filename, O_RDONLY);
   if (fd < 0)
@@ -164,7 +164,7 @@ bc_initfont (char *filename)
       abort ();
     }
   int count;
-  if (bc_bigcharread (fd, font, 36, &count) < 0)
+  if (bc_bigCharRead (fd, font, 36, &count) < 0)
     {
       perror ("bc_bigcharread");
       abort ();

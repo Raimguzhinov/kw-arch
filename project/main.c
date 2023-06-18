@@ -1,75 +1,75 @@
 #include <myInterface.h>
 #include <myReadKey.h>
+#include <mySignal.h>
 #include <mySimpleComputer.h>
 #include <myTerm.h>
-bool on = 1;
+
+bool on = true;
 
 int
 main ()
 {
-  int counter = 0x35;
-  bc_initfont ("mybch.font");
+  sc_halt = false;
+  enum keys key;
+  struct itimerval nval, oval;
   rk_myTermSave ();
+  bc_fontInit ("mybch.font");
   sc_memoryInit ();
   for (int i = 0; i < RAM_SIZE; i++)
     sc_memorySet (i, i + 1);
-  mi_uiInit (counter);
-  mi_uiUpdate ();
-  enum keys key;
+  mi_uiInit ();
+  ms_setTimer (&nval, &oval);
   do
     {
-      mi_uiUpdate ();
+      mi_uiUpdate (sc_halt);
+      mi_hideCursor ();
       rk_readKey (&key);
       switch (key)
         {
         case UP_KEY:
-          (instruction_counter <= 9)
-              ? (instruction_counter = 90 + instruction_counter)
-              : (instruction_counter -= 10);
-          break;
         case RIGHT_KEY:
-          (!((instruction_counter + 1) % 10)) ? (instruction_counter -= 9)
-                                              : (instruction_counter += 1);
-          break;
         case DOWN_KEY:
-          (instruction_counter >= 90)
-              ? (instruction_counter = instruction_counter - 90)
-              : (instruction_counter += 10);
-          break;
         case LEFT_KEY:
-          (!(instruction_counter % 10)) ? (instruction_counter += 9)
-                                        : (instruction_counter -= 1);
+          mi_currMemMove (key);
           break;
-
         case L_KEY:
-          sc_memoryLoad ("memory.bin");
+          mi_dirMenu ();
           break;
         case S_KEY:
-          sc_memorySave ("memory.bin");
+          mi_memorySave ();
           break;
-
         case R_KEY:
+          sc_regInit ();
+          setitimer (ITIMER_REAL, &nval, &oval);
           break;
         case T_KEY:
+          mc_oneTactPulse ();
           break;
         case I_KEY:
+          sc_restart ();
           break;
         case F5_KEY:
+          mi_accum ();
           break;
-
         case F6_KEY:
-          mi_Counter ();
+          mi_counter ();
           break;
-
         case ENTER_KEY:
-          mi_uisetValue ();
-          mi_uiUpdate ();
+          mi_uiSetValue ();
+          break;
+        case NOTHING_KEY:
+        case INVALID_KEY:
+          sc_halt = true;
           break;
         case ESC_KEY:
-          on = 0;
+          sc_halt = false;
+          on = false;
           break;
         }
     }
   while (on);
+  mt_clrscr ();
+  rk_myTermRestore ();
+  mi_showCursor ();
   return 0;
 }

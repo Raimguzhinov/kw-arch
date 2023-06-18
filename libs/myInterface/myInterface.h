@@ -1,10 +1,11 @@
 #pragma once
 #include <ctype.h>
+#include <dirent.h>
 #include <myBigChars.h>
+#include <myReadKey.h>
 #include <mySimpleComputer.h>
 #include <myTerm.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <sys/stat.h>
 #include <time.h>
 
 #define ROWS 24
@@ -52,12 +53,18 @@ int mi_displayOperation ();
 int mi_displayFlags ();
 int mi_displayBoxes ();
 int mi_displayTexts ();
-int mi_displayBigchars ();
-
-int mi_Counter ();
-int mi_uiInit (int counter);
-int mi_uiUpdate ();
-int mi_uisetValue ();
+int mi_displayBigChars ();
+int mi_displayAccumulatorBigChars ();
+int mi_counter ();
+int mi_accum ();
+int mi_uiInit ();
+int mi_uiUpdate (bool halt);
+int mi_uiSetValue ();
 bool mi_checkCorrectInput (const char buffer[10]);
 int mi_messageOutput (char *str, enum colors color);
 int mi_clearBuffIn ();
+int mi_hideCursor ();
+int mi_showCursor ();
+void mi_dirMenu ();
+int mi_memorySave ();
+int mi_currMemMove (enum keys direction);

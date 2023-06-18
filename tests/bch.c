@@ -10,8 +10,7 @@ extern int instruction_counter;
 void
 testFONT (int num, int x, int y)
 {
-  // mt_clrscr ();
-  bc_printbigchar (big_chars[num], x, y, RED, DEFAULT);
+  bc_printBigChar (big_chars[num], x, y, RED, DEFAULT);
   mt_gotoXY (x + 1, y + 12);
 }
 
@@ -22,10 +21,10 @@ main ()
   int big[2];
   mt_clrscr ();
   testFONT (2, 4, 2);
-  bc_printbigchar (big_chars[16], 14, 2, WHITE, DEFAULT);
+  bc_printBigChar (big_chars[16], 14, 2, WHITE, DEFAULT);
   testFONT (2, 23, 2);
-  bc_printbigchar (big_chars[17], 33, 0, WHITE, DEFAULT);
-  bc_printbigchar (big_chars[17], 33, 4, WHITE, DEFAULT);
+  bc_printBigChar (big_chars[17], 33, 0, WHITE, DEFAULT);
+  bc_printBigChar (big_chars[17], 33, 4, WHITE, DEFAULT);
   testFONT (4, 43, 2);
   printf ("\tшрифт ↓\n");
   fd = open ("mybch.font", O_RDONLY);
@@ -36,7 +35,7 @@ main ()
     }
   for (int i = 0; i < 18; i++)
     {
-      if (bc_bigcharread (fd, big, 2, &count) < 0)
+      if (bc_bigCharRead (fd, big, 2, &count) < 0)
         {
           perror ("bc_bigcharread");
           abort ();
@@ -47,7 +46,7 @@ main ()
                    i);
           abort ();
         }
-      bc_printbigchar (big, 2 + i * 10, 15, BLUE, DEFAULT);
+      bc_printBigChar (big, 2 + i * 10, 15, BLUE, DEFAULT);
     }
   if (close (fd) < 0)
     {

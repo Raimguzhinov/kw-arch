@@ -1,6 +1,6 @@
 LIB_NAME = myInterface
 
-CFLAGS = -Wall -I ../myTerm -I ../myBigChars -I ../mySimpleComputer
+CFLAGS = -Wall -I ../myReadKey -I ../myTerm -I ../myBigChars -I ../mySimpleComputer
 
 .PHONY: all
 
